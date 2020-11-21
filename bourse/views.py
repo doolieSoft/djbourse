@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 from django.shortcuts import redirect, render
 
 from .forms import StockListForm
-from .models import Stock
+from .models import Stock, AlphaVantageApiKey, CHOICES_TYPE_TRANSACTION
 from .utils import insert_new_stock_in_model, \
     calculate_and_get_diff_for_period, \
     get_differences_by_stock, \
@@ -94,12 +94,30 @@ def get_diff_for_all_periods_and_all_stocks(request):
         period_headers[period] = period
 
     array_of_array = []
-    stocks = Stock.objects.order_by('symbol')
+    stocks = Stock.objects.filter(monitored=True).order_by('symbol')
+    stocks_not_monitored = Stock.objects.filter(monitored=False).order_by('symbol')
     for stock in stocks:
         array_of_array.append(get_differences_by_stock(differences_by_period, stock))
 
     context = {
         "period_headers": period_headers,
-        "array_of_array": array_of_array
+        "array_of_array": array_of_array,
+        "stocks_not_monitored": stocks_not_monitored
     }
     return render(request, "diff_for_all_periods_for_all_stocks.html", context)
+
+
+def add_stock_symbol(request):
+    keys = AlphaVantageApiKey.objects.all()
+    context = {"keys": keys}
+    return render(request, "add_stock_symbol.html", context=context)
+
+
+def add_transaction(request):
+    types_transaction = CHOICES_TYPE_TRANSACTION
+    stocks = Stock.objects.all()
+    context = {
+        "stocks": stocks,
+        "types_transaction":types_transaction
+    }
+    return render(request, "add_transaction.html", context=context)

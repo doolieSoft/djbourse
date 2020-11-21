@@ -9,6 +9,10 @@
 </head>
 
 <body>
+<div class="container m-1">
+<br/>
+<a href="{% url 'index' %}">Retour à la page d'accueil</a>
+<br/>
 <form action="{% url 'upload-stocks-symbol' %}" method="post" enctype="multipart/form-data">
     {% csrf_token %}
     {{ message }}
@@ -23,5 +27,6 @@
 
     <p><input type="submit" value="Upload"/></p>
 </form>
+</div>
 </body>
 </html>

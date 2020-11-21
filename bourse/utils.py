@@ -1,7 +1,5 @@
 from .models import Stock, Price
 
-LIMIT_BY_MINUTES = 5
-
 
 def insert_new_stock_in_model(stock_file):
     stock_lines = stock_file.readlines()

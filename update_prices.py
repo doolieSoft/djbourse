@@ -49,7 +49,7 @@ if __name__ == "__main__":
         parser.print_help()
         exit(0)
 
-    stocks_symbols = Stock.objects.all()
+    stocks_symbols = Stock.objects.filter(monitored=True)
 
     for stock_symbol in stocks_symbols:
         print(stock_symbol.name)
