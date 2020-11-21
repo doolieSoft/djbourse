@@ -1,0 +1,6 @@
+/data/
+/db.sqlite3
+/venv/
+/.idea/
+/$.sdb
+/update_prices.bat

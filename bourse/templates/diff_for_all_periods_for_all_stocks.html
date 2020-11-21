@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
+          integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z" crossorigin="anonymous">
+</head>
+<body>
+<br/>
+<a href="{% url 'index' %}">Retour à la page d'accueil</a>
+<br/>
+<table class="table table-sm table-bordered table-hover">
+    <thead class="thead-light">
+    <th>Symbole</th>
+    {% for period in period_headers.keys %}
+    <th>Pourcentage gain {{period}}</th>
+    {% endfor %}
+    </thead>
+    <tbody>
+    <tbody>
+    {% for dict in array_of_array %}
+    <tr>
+        {% for symbol, values in dict.items %}
+        <td style="width: 15%"><b><a href="https://www.google.com/search?safe=off&sa=X&tbm=fin&q={{symbol}}">{{ symbol
+            }}</a></b></td>
+        {% for value in values %}
+        {% if value < -10 %}
+        <td class="table-danger">{{ value }}</td>
+        {% elif value < 0 %}
+        <td class="table-warning">{{ value }}</td>
+        {% elif value > 20 %}
+        <td class="table-primary">{{ value }}</td>
+        {% elif value > 10 %}
+        <td class="table-success">{{ value }}</td>
+        {% elif value > 0 %}
+        <td class="table-info">{{ value }}</td>
+        {% endif %}
+        {% endfor %}
+        {% endfor %}
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>
+</body>
+</html>
