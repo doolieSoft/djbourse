@@ -18,3 +18,27 @@ class Price(models.Model):
 
     def __str__(self):
         return str(self.stock.symbol) + " " + str(self.close) + " " + str(self.date)
+
+
+class Wallet(models.Model):
+    name = models.CharField(max_length=40)
+    stocks = models.ManyToManyField(Stock)
+
+    def __str__(self):
+        return str(self.name)
+
+
+VENTE = "Vente"
+ACHAT = "Achat"
+CHOICES_TYPE_TRANSACTION = ((ACHAT, "ACHAT"), (VENTE, "VENTE"),)
+
+
+class Transaction(models.Model):
+    date = models.DateField()
+    quantity = models.IntegerField(default=0)
+    stock = models.ForeignKey(Stock, on_delete=models.DO_NOTHING, null=True)
+    total_value = models.FloatField(default=0)
+    type = models.CharField(max_length=10, choices=CHOICES_TYPE_TRANSACTION, default=ACHAT)
+
+    def __str__(self):
+        return str(self.type) + " " + str(self.date) + " " + str(self.stock.symbol)

@@ -22,8 +22,7 @@
     {% for dict in array_of_array %}
     <tr>
         {% for symbol, values in dict.items %}
-        <td style="width: 15%"><b><a href="https://www.google.com/search?safe=off&sa=X&tbm=fin&q={{symbol}}">{{ symbol
-            }}</a></b></td>
+        <td style="width: 15%"><b><a href="https://www.google.com/search?safe=off&sa=X&tbm=fin&q={{symbol}}">{{ symbol }}</a></b></td>
         {% for value in values %}
         {% if value < -10 %}
         <td class="table-danger">{{ value }}</td>
