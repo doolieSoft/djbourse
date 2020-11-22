@@ -23,3 +23,4 @@ Some improvement to be done :
 * showing a flag in cell for stocks that have been splitted (AAPL in picture above)
 * Manage wallet and make some report on performance
 * Manage transactions
+* Make it multilingual
