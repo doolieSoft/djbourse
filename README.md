@@ -1,7 +1,7 @@
 # djbourse
 
 # .BAT Example for prices update (run each day)
-Create a bat file and put the code below. It will download a json file for each stock with **flag monitored** or **is_favorite** and add prices in database.
+Create a bat file and put the code below. It will download a json file for each stock with flag **monitored** or **is_favorite** and add prices in database.
 
 ```
 echo off
