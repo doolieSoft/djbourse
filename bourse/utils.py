@@ -30,7 +30,7 @@ def calculate_and_get_diff_for_period(prices_for_last_opened_day, prices_for_las
     for symbol, price in prices_for_last_opened_day.items():
         if symbol in prices_for_last_opened_day_of_period:
             diff = price.close - prices_for_last_opened_day_of_period[symbol].close
-            pourcentage_diff = diff / price.close * 100
+            pourcentage_diff = diff / prices_for_last_opened_day_of_period[symbol].close * 100
         else:
             pourcentage_diff = 0
         result[symbol] = pourcentage_diff

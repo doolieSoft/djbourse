@@ -95,9 +95,12 @@ def get_diff_for_all_periods_and_all_stocks(request):
 
     differences_by_monitored_stocks = []
     monitored_stocks = Stock.objects.filter(monitored=True).order_by('symbol')
-    stocks_not_monitored = Stock.objects.filter(monitored=False, is_favorite=False).order_by('symbol')
     for stock in monitored_stocks:
         differences_by_monitored_stocks.append(get_differences_by_stock(differences_by_period, stock))
+
+    stocks_not_monitored = []
+    for stock in Stock.objects.filter(monitored=False, is_favorite=False).order_by('symbol'):
+        stocks_not_monitored.append(f"{stock.symbol} ({stock.name})")
 
     differences_by_favorites_stocks = []
     favorites_stocks = Stock.objects.filter(is_favorite=True).order_by('symbol')
@@ -114,9 +117,19 @@ def get_diff_for_all_periods_and_all_stocks(request):
 
 
 def add_stock_symbol(request):
-    keys = AlphaVantageApiKey.objects.all()
-    context = {"keys": keys}
-    return render(request, "add_stock_symbol.html", context=context)
+    if request.method == "GET":
+        keys = AlphaVantageApiKey.objects.all()
+        context = {"keys": keys}
+        return render(request, "add_stock_symbol.html", context=context)
+    elif request.method == "POST":
+        print(request.POST["symbol"] + " "+request.POST["name"])
+        stock = Stock()
+        stock.symbol = request.POST["symbol"].strip()
+        stock.name = request.POST["name"].strip()
+        stock.save()
+
+        return redirect("index")
+
 
 
 def add_transaction(request):
@@ -143,7 +156,7 @@ def unset_monitored(request):
 def set_monitored(request):
     if request.method == "POST":
         print(request.POST['symbol'])
-        symbol, name, *rest = request.POST['symbol'].split("-")
+        symbol, name, *rest = request.POST['symbol'].split(" ")
         print(symbol)
         stock = Stock.objects.get(symbol=symbol.strip())
         stock.monitored = True

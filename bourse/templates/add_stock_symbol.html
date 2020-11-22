@@ -20,18 +20,18 @@
             </div>
             {% endfor %}
 
-        <form method="post" class="form-horizontal">
+        <form method="post" action="add_stock_symbol" class="form-horizontal">
             {% csrf_token %}
             <div class="form-group">
                 <label class="font-weight-bold col-sm-2" for="symbol">Symbole</label>
                 <div class="col-sm-5">
-                    <input class="form-control" type="text" id="symbol" onkeyup="update_link()"/>
+                    <input class="form-control" type="text" id="symbol" name="symbol" onkeyup="update_link()"/>
                 </div>
             </div>
             <div class="form-group">
                 <label class="font-weight-bold col-sm-2" for="name">Nom</label>
                 <div class="col-sm-5">
-                    <input class="form-control" type="text" id="name" />
+                    <input class="form-control" type="text" id="name" name="name" onkeyup="update_link()" />
                 </div>
             </div>
             <div class="form-group">
@@ -40,7 +40,11 @@
         </form>
         <p>Sélectionner l'apikey, entrer le symbole et tester le lien pour être bien sûr que les données correspondent</p>
         <a id="lien_alphavantage"
-           href="https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&interval=5min&outputsize=full">https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&interval=5min&outputsize=full</a>
+           href="https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&interval=5min&outputsize=full">https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&interval=5min&outputsize=full
+        </a>
+        <br />
+        <a id="lien_google_finance"
+           href="https://www.google.com/search?safe=off&sa=X&tbm=fin&">https://www.google.com/search?safe=off&sa=X&tbm=fin&</a>
     </div>
 </div>
 
@@ -48,10 +52,15 @@
     function update_link() {
         let api_key = document.getElementById("api_key").value;
         let symbol = document.getElementById("symbol").value;
+        let name = document.getElementById("name").value
 
-        url = "https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&interval=5min&outputsize=full" + "&symbol=" + symbol + "&apikey=" + api_key;
-        document.getElementById("lien_alphavantage").href = url
-        document.getElementById("lien_alphavantage").innerHTML = url
+        url_alphavantage = "https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&interval=5min&outputsize=full" + "&symbol=" + symbol + "&apikey=" + api_key;
+        document.getElementById("lien_alphavantage").href = url_alphavantage
+        document.getElementById("lien_alphavantage").innerHTML = url_alphavantage
+
+        url_google_finance = "https://www.google.com/search?q="+symbol + "%20" + name + "&safe=off&sa=X&tbm=fin&";
+        document.getElementById("lien_google_finance").href = url_google_finance
+        document.getElementById("lien_google_finance").innerHTML = url_google_finance
     }
 
 </script>

@@ -132,9 +132,9 @@
                                 <b><a href="https://www.google.com/search?safe=off&sa=X&tbm=fin&q={{symbol}}">{{ symbol }}</a></b>
                         </div>
                         <div class="btn-group">
-                            <form method="post" action="">
+                            <form method="post" action="set_favorite">
                                 {% csrf_token %}
-                                <input type="hidden" name="symbol" value="{{symbol}}">
+                                <input type="hidden" name="symbol" value="{{stock}}">
                                 <button type="submit" class="btn btn-default btn-sm">
                                     <i class="far fa-star"></i>
                                 </button>
