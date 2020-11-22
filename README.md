@@ -12,6 +12,7 @@ call djbourse\venv\Scripts\activate.bat
 call python djbourse\update_prices.py --api_key "xxx" --folder_data djbourse\data
 call djbourse\venv\Scripts\deactivate.bat
 ```
+## Dashborad page showing differences by stock and period
 Below is an example of the page which show percentage diff by period for all stocks. Stocks can be put in *favorite table*, in *monitored table*, or in *not monitored table*.
 Each cell has a color depending on level of difference between current price and previous price.
 
@@ -19,7 +20,7 @@ Each cell has a color depending on level of difference between current price and
 ![](images/actions_non_suivies.png)
 
 
-Some improvement to be done : 
+### Some possible improvement : 
 * showing a flag in cell for stocks that have been splitted (AAPL in picture above)
 * Manage wallet and make some report on performance
 * Manage transactions
