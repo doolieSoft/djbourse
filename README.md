@@ -19,3 +19,5 @@ Each cell has a color depending on level of difference between current price and
 
 Some improvement to be done : 
 * showing a flag in cell for stocks that have been splitted (AAPL in picture above)
+* Manage wallet and make some report on performance
+* Manage transactions
