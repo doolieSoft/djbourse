@@ -1,6 +1,6 @@
 # djbourse
 
-.BAT Example for update of prices (to run each day).
+# .BAT Example for prices update (run each day)
 It will download a json file for each stock and add prices in database.
 
 echo off
