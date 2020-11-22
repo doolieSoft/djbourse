@@ -7,6 +7,8 @@ from datetime import datetime
 
 from django.db.models import Q
 
+SECS_BEFORE_NEXT_API_CALL = 62
+
 TIME_SERIES_DAILY = "Time Series (Daily)"
 OPEN = "1. open"
 CLOSE = "4. close"
@@ -60,7 +62,7 @@ if __name__ == "__main__":
         if "Note" in json_data.keys():
             os.remove(file)
             print("Attente avant nouvel essai de download")
-            time.sleep(62)
+            time.sleep(SECS_BEFORE_NEXT_API_CALL)
             (file, json_data) = download_json_for_symbol(stock_symbol.symbol, args.folder_data, args.api_key)
 
         now = datetime.now()

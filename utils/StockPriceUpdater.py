@@ -4,13 +4,6 @@ from datetime import datetime, timedelta
 
 import requests as r
 
-# Analyse sur 1 jour
-# Analyse sur 1 semaine
-# Analyse sur 2 semaines
-# Analyse sur 3 semaines
-# Analyse sur 1 mois
-
-
 TIME_SERIES_INTRADAY = 'Time Series (5min)'
 TIME_SERIES_DAILY = 'Time Series (Daily)'
 OPEN = '1. open'
