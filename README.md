@@ -3,7 +3,7 @@
 This django app helps me monitor some stocks. It is using [AlphaVantage](https://rapidapi.com/alphavantage/api/alpha-vantage) API to get prices history for monitored stocks. It needs an api_key from AlphaVantage. When you have it, you can add it to the table AlphaVantageApiKey via django admin. If you use the batch file below, you have to put the api_key as parameter in order to update prices.
 
 # .BAT Example for prices update (run each day)
-Create a bat file and put the code below. It will download a json file for each stock with flag **monitored** or **is_favorite** and add prices in database. Note that you need an api_key from [AlphaVantage](https://rapidapi.com/alphavantage/api/alpha-vantage) because a call is done to their API website to have stocks history prices.
+Create a bat file and put the code below. I have created a scheduled task which run each day to download json file for each stocks with flag **monitored** or **is_favorite** and add prices to database.
 
 ```
 echo off
