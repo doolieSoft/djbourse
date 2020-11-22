@@ -93,15 +93,21 @@ def get_diff_for_all_periods_and_all_stocks(request):
         differences_by_period[period] = diff_for_this_period
         period_headers[period] = period
 
-    array_of_array = []
-    stocks = Stock.objects.filter(monitored=True).order_by('symbol')
-    stocks_not_monitored = Stock.objects.filter(monitored=False).order_by('symbol')
-    for stock in stocks:
-        array_of_array.append(get_differences_by_stock(differences_by_period, stock))
+    differences_by_monitored_stocks = []
+    monitored_stocks = Stock.objects.filter(monitored=True).order_by('symbol')
+    stocks_not_monitored = Stock.objects.filter(monitored=False, is_favorite=False).order_by('symbol')
+    for stock in monitored_stocks:
+        differences_by_monitored_stocks.append(get_differences_by_stock(differences_by_period, stock))
+
+    differences_by_favorites_stocks = []
+    favorites_stocks = Stock.objects.filter(is_favorite=True).order_by('symbol')
+    for stock in favorites_stocks:
+        differences_by_favorites_stocks.append(get_differences_by_stock(differences_by_period, stock))
 
     context = {
         "period_headers": period_headers,
-        "array_of_array": array_of_array,
+        "differences_by_favorites_stocks": differences_by_favorites_stocks,
+        "differences_by_monitored_stocks": differences_by_monitored_stocks,
         "stocks_not_monitored": stocks_not_monitored
     }
     return render(request, "diff_for_all_periods_for_all_stocks.html", context)
@@ -118,6 +124,52 @@ def add_transaction(request):
     stocks = Stock.objects.all()
     context = {
         "stocks": stocks,
-        "types_transaction":types_transaction
+        "types_transaction": types_transaction
     }
     return render(request, "add_transaction.html", context=context)
+
+
+def unset_monitored(request):
+    if request.method == "POST":
+        symbol, name, *rest = request.POST['symbol'].split(" ")
+        print(symbol)
+        stock = Stock.objects.get(symbol=symbol)
+        stock.monitored = False
+        stock.save()
+
+    return redirect("get-diff-for-all-periods-and-all-stocks")
+
+
+def set_monitored(request):
+    if request.method == "POST":
+        print(request.POST['symbol'])
+        symbol, name, *rest = request.POST['symbol'].split("-")
+        print(symbol)
+        stock = Stock.objects.get(symbol=symbol.strip())
+        stock.monitored = True
+        stock.save()
+    return redirect("get-diff-for-all-periods-and-all-stocks")
+
+
+def set_favorite(request):
+    if request.method == "POST":
+        print(request.POST['symbol'])
+        symbol, name, *rest = request.POST['symbol'].split(" ")
+        print(symbol)
+        stock = Stock.objects.get(symbol=symbol.strip())
+        stock.is_favorite = True
+        stock.monitored = False
+        stock.save()
+    return redirect("get-diff-for-all-periods-and-all-stocks")
+
+
+def unset_favorite(request):
+    if request.method == "POST":
+        print(request.POST['symbol'])
+        symbol, name, *rest = request.POST['symbol'].split(" ")
+        print(symbol)
+        stock = Stock.objects.get(symbol=symbol.strip())
+        stock.is_favorite = False
+        stock.monitored = True
+        stock.save()
+    return redirect("get-diff-for-all-periods-and-all-stocks")

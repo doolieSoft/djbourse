@@ -5,6 +5,7 @@
     <title>Title</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
           integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z" crossorigin="anonymous">
+    <script src="https://kit.fontawesome.com/d583ef33d2.js" crossorigin="anonymous"></script>
 </head>
 <body>
 <div class="container-fluid m-1">
@@ -12,6 +13,54 @@
         <br/>
         <a href="{% url 'index' %}">Retour à la page d'accueil</a>
         <br/>
+                <br/>
+        <table class="table table-sm table-bordered table-hover">
+            <caption>Actions favorites</caption>
+            <thead class="thead-light">
+            <th>Symbole</th>
+            {% for period in period_headers.keys %}
+            <th>Pourcentage gain {{period}}</th>
+            {% endfor %}
+            </thead>
+            <tbody>
+            <tbody>
+            {% for dict in differences_by_favorites_stocks %}
+            <tr>
+                {% for symbol, values in dict.items %}
+                <td style="width: 20%">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                                <b><a href="https://www.google.com/search?safe=off&sa=X&tbm=fin&q={{symbol}}">{{ symbol }}</a></b>
+                        </div>
+                        <div class="btn-group">
+                            <form method="post" action="unset_favorite">
+                                {% csrf_token %}
+                                <input type="hidden" name="symbol" value="{{symbol}}">
+                                <button type="submit" class="btn btn-default btn-sm">
+                                    <i class="fas fa-star"></i>
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </td>
+                {% for value in values %}
+                {% if value < -10 %}
+                <td class="table-danger">{{ value }}</td>
+                {% elif value < 0 %}
+                <td class="table-warning">{{ value }}</td>
+                {% elif value > 20 %}
+                <td class="table-primary">{{ value }}</td>
+                {% elif value > 10 %}
+                <td class="table-success">{{ value }}</td>
+                {% elif value > 0 %}
+                <td class="table-info">{{ value }}</td>
+                {% endif %}
+                {% endfor %}
+                {% endfor %}
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
         <table class="table table-sm table-bordered table-hover">
             <caption>Actions suivies</caption>
             <thead class="thead-light">
@@ -22,10 +71,32 @@
             </thead>
             <tbody>
             <tbody>
-            {% for dict in array_of_array %}
+            {% for dict in differences_by_monitored_stocks %}
             <tr>
                 {% for symbol, values in dict.items %}
-                <td style="width: 15%"><b><a href="https://www.google.com/search?safe=off&sa=X&tbm=fin&q={{symbol}}">{{ symbol }}</a></b></td>
+                <td style="width: 20%">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                                <b><a href="https://www.google.com/search?safe=off&sa=X&tbm=fin&q={{symbol}}">{{ symbol }}</a></b>
+                        </div>
+                        <div class="btn-group">
+                            <form method="post" action="set_favorite">
+                                {% csrf_token %}
+                                <input type="hidden" name="symbol" value="{{symbol}}">
+                                <button type="submit" class="btn btn-default btn-sm">
+                                    <i class="far fa-star"></i>
+                                </button>
+                            </form>
+                            <form method="post" action="unset_monitored">
+                                {% csrf_token %}
+                                <input type="hidden" name="symbol" value="{{symbol}}">
+                                <button type="submit" class="btn btn-default btn-sm">
+                                    <i class="far fa-minus-square"></i>
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </td>
                 {% for value in values %}
                 {% if value < -10 %}
                 <td class="table-danger">{{ value }}</td>
@@ -48,10 +119,38 @@
             <caption>Actions non suivies</caption>
             <thead class="thead-light">
             <th>Symbole</th>
+            <th></th>
             </thead>
             <tbody>
             {% for stock in stocks_not_monitored %}
-            <tr><td>{{stock}}</td></tr>
+            <tr>
+                <td style="width: 20%">
+                    <div class="d-flex justify-content-between">
+                    {{stock}}
+
+                        <div>
+                                <b><a href="https://www.google.com/search?safe=off&sa=X&tbm=fin&q={{symbol}}">{{ symbol }}</a></b>
+                        </div>
+                        <div class="btn-group">
+                            <form method="post" action="">
+                                {% csrf_token %}
+                                <input type="hidden" name="symbol" value="{{symbol}}">
+                                <button type="submit" class="btn btn-default btn-sm">
+                                    <i class="far fa-star"></i>
+                                </button>
+                            </form>
+                            <form method="post" action="set_monitored">
+                                {% csrf_token %}
+                                <input type="hidden" name="symbol" value="{{stock}}">
+                                <button type="submit" class="btn btn-default btn-sm">
+                                    <i class="far fa-plus-square"></i>
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </td>
+                <td></td>
+            </tr>
             {% endfor %}
             </tbody>
         </table>

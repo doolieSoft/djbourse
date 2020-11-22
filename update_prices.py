@@ -5,6 +5,8 @@ import os
 import time
 from datetime import datetime
 
+from django.db.models import Q
+
 TIME_SERIES_DAILY = "Time Series (Daily)"
 OPEN = "1. open"
 CLOSE = "4. close"
@@ -49,7 +51,7 @@ if __name__ == "__main__":
         parser.print_help()
         exit(0)
 
-    stocks_symbols = Stock.objects.filter(monitored=True)
+    stocks_symbols = Stock.objects.filter(Q(monitored=True) | Q(is_favorite=True))
 
     for stock_symbol in stocks_symbols:
         print(stock_symbol.name)
