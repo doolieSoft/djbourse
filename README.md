@@ -16,3 +16,6 @@ Below is an example of the page which show percentage diff by period for all sto
 Each cell has a color depending on level of difference between current price and previous price.
 
 ![](images/get_diff_for_all_periods_and_all_stocks.png)
+
+Some improvement to be done : 
+* showing a flag in cell for stocks that have been splitted (AAPL in picture above)
