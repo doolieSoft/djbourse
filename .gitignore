@@ -4,3 +4,4 @@
 /.idea/
 /update_prices.bat
 /bourse/migrations/
+/db_backup.sqlite3
