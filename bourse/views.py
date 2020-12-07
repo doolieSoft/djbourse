@@ -3,12 +3,13 @@ from datetime import datetime, timedelta
 from django.shortcuts import redirect, render
 
 from .forms import StockListForm
-from .models import Stock, AlphaVantageApiKey, CHOICES_TYPE_TRANSACTION
+from .models import Stock, AlphaVantageApiKey, CHOICES_TYPE_TRANSACTION, Wallet, Share, StockPrice, CurrencyDayValue
 from .utils import insert_new_stock_in_model, \
     calculate_and_get_diff_for_period, \
     get_differences_by_stock, \
     get_prices_for_date
 
+DUREE_2_JOUR = float(2)
 DUREE_SEMAINE = float(7)
 DUREE_MI_MOIS = float(14)
 DUREE_3_SEMAINES = float(21)
@@ -17,7 +18,8 @@ DUREE_BI_MOIS = float(60)
 DUREE_MI_ANNEE = float(180)
 DUREE_ANNEE = float(360)
 DUREE_2_ANNEE = float(720)
-all_periods = [DUREE_SEMAINE,
+all_periods = [DUREE_2_JOUR,
+               DUREE_SEMAINE,
                DUREE_MI_MOIS,
                DUREE_3_SEMAINES,
                DUREE_MOIS,
@@ -122,14 +124,13 @@ def add_stock_symbol(request):
         context = {"keys": keys}
         return render(request, "add_stock_symbol.html", context=context)
     elif request.method == "POST":
-        print(request.POST["symbol"] + " "+request.POST["name"])
+        print(request.POST["symbol"] + " " + request.POST["name"])
         stock = Stock()
         stock.symbol = request.POST["symbol"].strip()
         stock.name = request.POST["name"].strip()
         stock.save()
 
         return redirect("index")
-
 
 
 def add_transaction(request):
@@ -186,3 +187,43 @@ def unset_favorite(request):
         stock.monitored = True
         stock.save()
     return redirect("get-diff-for-all-periods-and-all-stocks")
+
+
+def show_wallet_detail(request):
+    wallet = Wallet.objects.get(pk=1)
+    shares = Share.objects.filter(wallet=wallet).order_by('stock')
+
+    current_shares_prices_by_stocks = {}
+    current_total_prices_in_home_currency = {}
+    shares_benef_by_stock = {}
+    for share in shares:
+        stock_price = StockPrice.objects.filter(stock=share.stock).order_by("-date")
+        current_shares_prices_by_stocks[share.stock.symbol] = str(
+            stock_price[0].close) + " " + share.currency_day_value.foreign_currency.symbol
+
+        currency_symbol = share.currency_day_value.foreign_currency.symbol
+        most_recent_currency_day_value = \
+            CurrencyDayValue.objects.filter(foreign_currency__symbol=currency_symbol).order_by("-datetime_value")[0]
+
+        print(most_recent_currency_day_value)
+        current_total_prices_in_home_currency[share.stock.symbol] = \
+            str(round(share.nb *
+                      stock_price[0].close *
+                      most_recent_currency_day_value.ratio_foreign_to_home_currency, 2)) + " €"
+
+        benef = round((share.nb *
+                       stock_price[0].close *
+                       most_recent_currency_day_value.ratio_foreign_to_home_currency) - share.total_price_in_home_currency,
+                      2)
+        print(benef)
+        shares_benef_by_stock[share.stock.symbol] = benef
+
+    context = {
+        'current_shares_prices_by_stocks': current_shares_prices_by_stocks,
+        'current_total_prices_in_home_currency': current_total_prices_in_home_currency,
+        'shares_benef_by_stock': shares_benef_by_stock,
+        'shares': shares,
+        'wallet': wallet,
+    }
+
+    return render(request, "show_wallet_detail.html", context=context)

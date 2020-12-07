@@ -1,4 +1,4 @@
-from .models import Stock, Price
+from .models import Stock, StockPrice
 
 
 def insert_new_stock_in_model(stock_file):
@@ -16,7 +16,7 @@ def get_prices_for_date(dt_from):
     stocks = Stock.objects.all()
     stocks_symbols_array = [stock.symbol for stock in stocks]
 
-    prices_for_all_stocks = Price.objects.filter(date=dt_from, stock__symbol__in=stocks_symbols_array)
+    prices_for_all_stocks = StockPrice.objects.filter(date=dt_from, stock__symbol__in=stocks_symbols_array)
 
     price_by_symbol = {}
     for price in prices_for_all_stocks:

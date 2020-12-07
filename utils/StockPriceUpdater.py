@@ -53,6 +53,7 @@ class StockPriceUpdater(object):
                 print(constructed_url)
                 self.response = r.get(constructed_url)
                 self.data = json.loads(self.response.text)
+
                 if not os.path.isdir("data"):
                     os.mkdir("data")
                 with open(os.path.join(self.folder, f"{yesterday}-{self.symbol}.json"), "w") as json_file:

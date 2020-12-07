@@ -8,7 +8,7 @@ from .views import upload_stocks_symbol, \
     unset_monitored, \
     set_monitored, \
     set_favorite, \
-    unset_favorite
+    unset_favorite, show_wallet_detail
 
 urlpatterns = [
     path('', index, name='index'),
@@ -20,6 +20,7 @@ urlpatterns = [
     path('unset_monitored', unset_monitored, name='unset-monitored'),
     path('set_monitored', set_monitored, name='set-monitored'),
     path('set_favorite', set_favorite, name='set-favorite'),
-    path('unset_favorite', unset_favorite, name='unset-favorite')
+    path('unset_favorite', unset_favorite, name='unset-favorite'),
+    path('show_wallet_detail',show_wallet_detail, name='show-wallet-detail')
 
 ]

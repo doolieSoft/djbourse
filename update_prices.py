@@ -5,7 +5,9 @@ import os
 import time
 from datetime import datetime
 
+import requests as r
 from django.db.models import Q
+from django.utils import timezone
 
 SECS_BEFORE_NEXT_API_CALL = 62
 
@@ -19,7 +21,7 @@ import django
 django.setup()
 
 from utils.StockPriceUpdater import StockPriceUpdater
-from bourse.models import Stock, Price
+from bourse.models import Stock, StockPrice, CurrencyDayValue, Currency
 
 
 def download_json_for_symbol(symbol, folder, api_key):
@@ -27,6 +29,24 @@ def download_json_for_symbol(symbol, folder, api_key):
     file = spu.download_data()
     json_file = open(file, "r")
     return (file, json.load(json_file))
+
+
+def update_exchange_rate_usd_to_eur():
+    url = f"https://www.alphavantage.co/query?function=CURRENCY_EXCHANGE_RATE&from_currency=USD&to_currency=EUR&apikey={args.api_key}"
+    response = r.get(url)
+    data = json.loads(response.text)
+    print(data)
+    foreign_currency = Currency.objects.get(symbol="$")
+    cdv = CurrencyDayValue()
+    cdv.ratio_home_to_foreign_currency = 1 / float(data['Realtime Currency Exchange Rate']['5. Exchange Rate'])
+    cdv.ratio_foreign_to_home_currency = float(data['Realtime Currency Exchange Rate']['5. Exchange Rate'])
+    last_refreshed_datetime = data['Realtime Currency Exchange Rate']['6. Last Refreshed']
+    dt = datetime.strptime(last_refreshed_datetime, "%Y-%m-%d %H:%M:%S")
+    current_tz = timezone.get_current_timezone()
+    last_refreshed_datetime = current_tz.localize(dt)
+    cdv.datetime_value = last_refreshed_datetime
+    cdv.foreign_currency = foreign_currency
+    cdv.save()
 
 
 if __name__ == "__main__":
@@ -53,6 +73,8 @@ if __name__ == "__main__":
         parser.print_help()
         exit(0)
 
+    update_exchange_rate_usd_to_eur()
+
     stocks_symbols = Stock.objects.filter(Q(monitored=True) | Q(is_favorite=True))
 
     for stock_symbol in stocks_symbols:
@@ -70,13 +92,13 @@ if __name__ == "__main__":
         first_day_of_this_year = f"{this_year}-01-01"
 
         print(file)
-        if Price.objects.filter(stock=stock_symbol).count() == 0:
+        if StockPrice.objects.filter(stock=stock_symbol).count() == 0:
             for date, prices in json_data[TIME_SERIES_DAILY].items():
                 price_date = f"{date}"
                 price_open = f"{float(prices[OPEN]):.2f}"
                 price_close = f"{float(prices[CLOSE]):.2f}"
 
-                price = Price()
+                price = StockPrice()
                 price.open = price_open
                 price.close = price_close
                 price.date = price_date
@@ -85,12 +107,12 @@ if __name__ == "__main__":
         else:
             for date, prices in json_data[TIME_SERIES_DAILY].items():
                 if date > first_day_of_this_year:
-                    if Price.objects.filter(date=date, stock=stock_symbol).count() == 0:
+                    if StockPrice.objects.filter(date=date, stock=stock_symbol).count() == 0:
                         price_date = f"{date}"
                         price_open = f"{float(prices[OPEN]):.2f}"
                         price_close = f"{float(prices[CLOSE]):.2f}"
 
-                        price = Price()
+                        price = StockPrice()
                         price.open = price_open
                         price.close = price_close
                         price.date = price_date
