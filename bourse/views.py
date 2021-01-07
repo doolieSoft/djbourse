@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 from django.shortcuts import redirect, render
 
 from .forms import StockListForm
-from .models import Stock, AlphaVantageApiKey, CHOICES_TYPE_TRANSACTION, Wallet, Share, StockPrice, CurrencyDayValue
+from .models import Stock, AlphaVantageApiKey, CHOICES_TYPE_TRANSACTION, Wallet, Share, StockPrice, CurrencyCurrentValue, Transaction
 from .utils import insert_new_stock_in_model, \
     calculate_and_get_diff_for_period, \
     get_differences_by_stock, \
@@ -191,19 +191,27 @@ def unset_favorite(request):
 
 def show_wallet_detail(request):
     wallet = Wallet.objects.get(pk=1)
-    shares = Share.objects.filter(wallet=wallet).order_by('stock')
+
+    shares = Share.objects.filter(wallet=wallet)
+    transactions = Transaction.objects.all().order_by("date")
+    wallet_transactions = []
+    for transaction in transactions:
+        if transaction.share.wallet == wallet:
+            wallet_transactions.append(transaction)
+
+    shares_in_wallet_and_not_archived = shares.filter(wallet=wallet, archive=False).order_by('stock')
 
     current_shares_prices_by_stocks = {}
     current_total_prices_in_home_currency = {}
     shares_benef_by_stock = {}
-    for share in shares:
+    for share in shares_in_wallet_and_not_archived:
         stock_price = StockPrice.objects.filter(stock=share.stock).order_by("-date")
         current_shares_prices_by_stocks[share.stock.symbol] = str(
             stock_price[0].close) + " " + share.currency_day_value.foreign_currency.symbol
 
         currency_symbol = share.currency_day_value.foreign_currency.symbol
         most_recent_currency_day_value = \
-            CurrencyDayValue.objects.filter(foreign_currency__symbol=currency_symbol).order_by("-datetime_value")[0]
+            CurrencyCurrentValue.objects.filter(foreign_currency__symbol=currency_symbol).order_by("-datetime_value")[0]
 
         print(most_recent_currency_day_value)
         current_total_prices_in_home_currency[share.stock.symbol] = \
@@ -218,12 +226,16 @@ def show_wallet_detail(request):
         print(benef)
         shares_benef_by_stock[share.stock.symbol] = benef
 
+    shares_in_wallet_and_archived = Share.objects.filter(wallet=wallet, archive=True).order_by('stock')
+
     context = {
         'current_shares_prices_by_stocks': current_shares_prices_by_stocks,
         'current_total_prices_in_home_currency': current_total_prices_in_home_currency,
         'shares_benef_by_stock': shares_benef_by_stock,
-        'shares': shares,
+        'shares': shares_in_wallet_and_not_archived,
+        'shares_archived': shares_in_wallet_and_archived,
         'wallet': wallet,
+        'transactions': wallet_transactions
     }
 
     return render(request, "show_wallet_detail.html", context=context)

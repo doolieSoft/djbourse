@@ -21,7 +21,7 @@ import django
 django.setup()
 
 from utils.StockPriceUpdater import StockPriceUpdater
-from bourse.models import Stock, StockPrice, CurrencyDayValue, Currency
+from bourse.models import Stock, StockPrice, CurrencyCurrentValue, Currency
 
 
 def download_json_for_symbol(symbol, folder, api_key):
@@ -37,7 +37,7 @@ def update_exchange_rate_usd_to_eur():
     data = json.loads(response.text)
     print(data)
     foreign_currency = Currency.objects.get(symbol="$")
-    cdv = CurrencyDayValue()
+    cdv = CurrencyCurrentValue()
     cdv.ratio_home_to_foreign_currency = 1 / float(data['Realtime Currency Exchange Rate']['5. Exchange Rate'])
     cdv.ratio_foreign_to_home_currency = float(data['Realtime Currency Exchange Rate']['5. Exchange Rate'])
     last_refreshed_datetime = data['Realtime Currency Exchange Rate']['6. Last Refreshed']

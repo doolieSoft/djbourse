@@ -30,7 +30,7 @@ class Currency(models.Model):
         return str(self.symbol) + " - " + str(self.name)
 
 
-class CurrencyDayValue(models.Model):
+class CurrencyCurrentValue(models.Model):
     ratio_home_to_foreign_currency = models.FloatField()
     ratio_foreign_to_home_currency = models.FloatField()
     datetime_value = models.DateTimeField()
@@ -51,23 +51,24 @@ class Wallet(models.Model):
 
 class Share(models.Model):
     nb = models.IntegerField()
-    price_in_foreign_currency = models.FloatField()
-    price_in_home_currency = models.FloatField()
-    buy_date = models.DateField()
+    pmp_in_foreign_currency = models.FloatField()
+    pmp_in_home_currency = models.FloatField()
     wallet = models.ForeignKey(to=Wallet, on_delete=models.CASCADE)
     stock = models.ForeignKey(to=Stock, on_delete=models.CASCADE)
-    currency_day_value = models.ForeignKey(to=CurrencyDayValue, on_delete=models.DO_NOTHING)
+    currency_day_value = models.ForeignKey(to=CurrencyCurrentValue, on_delete=models.DO_NOTHING)
+    archive = models.BooleanField(default=False)
+
 
     def __str__(self):
-        return str(self.nb) + " " + str(self.stock.symbol) + " (" + str(self.buy_date) + ")"
+        return str(self.stock.symbol)
 
     @property
     def total_price_in_foreign_currency(self):
-        return round(self.price_in_foreign_currency * self.nb, 2)
+        return round(self.pmp_in_foreign_currency * self.nb, 2)
 
     @property
     def total_price_in_home_currency(self):
-        return round(self.price_in_home_currency * self.nb, 2)
+        return round(self.pmp_in_home_currency * self.nb, 2)
 
 
 VENTE = "Vente"
@@ -77,10 +78,13 @@ CHOICES_TYPE_TRANSACTION = ((ACHAT, "ACHAT"), (VENTE, "VENTE"),)
 
 class Transaction(models.Model):
     date = models.DateField()
-    quantity = models.IntegerField(default=0)
+    nb = models.IntegerField(default=0)
     stock = models.ForeignKey(Stock, on_delete=models.DO_NOTHING, null=True)
-    total_value = models.FloatField(default=0)
+    price_in_foreign_currency = models.FloatField(default=0)
+    price_in_home_currency = models.FloatField(default=0)
     type = models.CharField(max_length=10, choices=CHOICES_TYPE_TRANSACTION, default=ACHAT)
+    currency_transaction_value = models.ForeignKey(to=CurrencyCurrentValue, on_delete=models.DO_NOTHING)
+    share = models.ForeignKey(to=Share, on_delete=models.DO_NOTHING, default=None)
 
     def __str__(self):
         return str(self.type) + " " + str(self.date) + " " + str(self.stock.symbol)

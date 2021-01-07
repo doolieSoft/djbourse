@@ -10,41 +10,79 @@
 <body>
 <div class="container-fluid m-1">
     <div class="col-12">
-    <br/>
-    <a href="{% url 'index' %}">Retour à la page d'accueil</a>
-    <br/>
+        <br/>
+        <a href="{% url 'index' %}">Retour à la page d'accueil</a>
+        <br/>
+        <div class="row">
+            <h1>{{wallet.name}}</h1>
+            <table class="table table-sm table-bordered table-hover">
+                <thead class="thead-light">
+                <th>Action</th>
+                <th>Nombre</th>
+                <th>Prix en devise d'achat</th>
+                <th>Prix actuel</th>
+                <!-- <th>Val. totale à l'achat en devise étrangère</th> -->
+                <th>Val. totale à l'achat €</th>
+                <th>Val. totale actuelle en €</th>
+                <th>Bénef.</th>
+                </thead>
+                {% for share in shares %}
+                {% if shares_benef_by_stock|dict_key:share.stock.symbol < 0 %}
+                <tr class="table-danger">
+                    {% else %}
+                <tr class="table-success">
+                    {% endif %}
+                    <td>{{ share.stock.symbol }}</td>
+                    <td>{{ share.nb }}</td>
+                    <td>{{ share.pmp_in_foreign_currency }} {{ share.currency_day_value.foreign_currency.symbol }}</td>
+                    <td>{{ current_shares_prices_by_stocks|dict_key:share.stock.symbol }}</td>
+                    <!--<td>{{ share.total_price_in_foreign_currency }} {{ share.currency_day_value.foreign_currency.symbol }}</td>-->
+                    <td>{{ share.total_price_in_home_currency }} €</td>
+                    <td>{{ current_total_prices_in_home_currency|dict_key:share.stock.symbol }}</td>
+                    <td>{{ shares_benef_by_stock|dict_key:share.stock.symbol }} €</td>
+                </tr>
+                {% endfor %}
+            </table>
+        </div>
+        <div class="row">
+            <h2>Liste des transactions</h2>
+            <table class="table table-sm table-bordered table-hover">
+                <thead class="thead-light">
+                <th>Action</th>
+                <th>Nombre</th>
+                <th>Prix en devise &eacute;trang&egrave;re</th>
+                <th>Date</th>
+                <th>Op&eacute;ration</th>
+                </thead>
+                <tbody>
+                {% for transaction in transactions %}
+                <tr>
+                    <td>{{ transaction.stock.symbol }}</td>
+                    <td>{{ transaction.nb }}</td>
+                    <td>{{ transaction.price_in_foreign_currency }} {{ transaction.currency_transaction_value.foreign_currency.symbol }}</td>
+                    <td>{{ transaction.date }}</td>
+                    <td>{{ transaction.type }}</td>
+                </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <div class="row">
+            <h2>Archive de {{ wallet.name }}</h2>
+            <table class="table table-sm table-bordered table-hover">
+                <thead class="thead-light">
+                <th>Action</th>
+                </thead>
+                <tbody>
+                {% for share_archived in shares_archived %}
+                <tr>
+                    <td>{{ share_archived.stock.symbol }}</td>
+                </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
 
-    <h1>{{wallet.name}}</h1>
-    <table class="table table-sm table-bordered table-hover">
-        <thead class="thead-light">
-        <th>Action</th>
-        <th>Date achat</th>
-        <th>Nombre</th>
-        <th>Prix en devise d'achat</th>
-        <th>Prix actuel</th>
-        <!-- <th>Val. totale à l'achat en devise étrangère</th> -->
-        <th>Val. totale à l'achat €</th>
-        <th>Val. totale actuelle en €</th>
-        <th>Bénef.</th>
-        </thead>
-        {% for share in shares %}
-        {% if shares_benef_by_stock|dict_key:share.stock.symbol < 0 %}
-        <tr class="table-danger">
-        {% else %}
-        <tr class="table-success">
-        {% endif %}
-            <td>{{ share.stock.symbol }}</td>
-            <td>{{ share.buy_date }}</td>
-            <td>{{ share.nb }}</td>
-            <td>{{ share.price_in_foreign_currency }} {{ share.currency_day_value.foreign_currency.symbol }}</td>
-            <td>{{ current_shares_prices_by_stocks|dict_key:share.stock.symbol }}</td>
-            <!--<td>{{ share.total_price_in_foreign_currency }} {{ share.currency_day_value.foreign_currency.symbol }}</td>-->
-            <td>{{ share.total_price_in_home_currency }} €</td>
-            <td>{{ current_total_prices_in_home_currency|dict_key:share.stock.symbol }}</td>
-            <td>{{ shares_benef_by_stock|dict_key:share.stock.symbol }} €</td>
-        </tr>
-        {% endfor %}
-    </table>
     </div>
 </div>
 </body>
