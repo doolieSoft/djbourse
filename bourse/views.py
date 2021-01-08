@@ -3,7 +3,8 @@ from datetime import datetime, timedelta
 from django.shortcuts import redirect, render
 
 from .forms import StockListForm
-from .models import Stock, AlphaVantageApiKey, CHOICES_TYPE_TRANSACTION, Wallet, Share, StockPrice, CurrencyCurrentValue, Transaction
+from .models import Stock, AlphaVantageApiKey, CHOICES_TYPE_TRANSACTION, Wallet, Share, StockPrice, \
+    CurrencyCurrentValue, Transaction
 from .utils import insert_new_stock_in_model, \
     calculate_and_get_diff_for_period, \
     get_differences_by_stock, \
@@ -193,11 +194,24 @@ def show_wallet_detail(request):
     wallet = Wallet.objects.get(pk=1)
 
     shares = Share.objects.filter(wallet=wallet)
-    transactions = Transaction.objects.all().order_by("date")
+    transactions = Transaction.objects.all().order_by("-date")
     wallet_transactions = []
+    total_buy = 0
+    total_sell = 0
+    total_transaction_fees = 0
+    total_investment_in_stock = 0
     for transaction in transactions:
         if transaction.share.wallet == wallet:
             wallet_transactions.append(transaction)
+            total_transaction_fees += round(transaction.transacrion_fees, 2)
+            if transaction.type == "Vente":
+                total_sell += round(
+                    transaction.nb * transaction.price_in_foreign_currency * transaction.currency_transaction_value.ratio_foreign_to_home_currency,
+                    2)
+            elif transaction.type == "Achat":
+                total_buy += round(
+                    transaction.nb * transaction.price_in_foreign_currency * transaction.currency_transaction_value.ratio_foreign_to_home_currency,
+                    2)
 
     shares_in_wallet_and_not_archived = shares.filter(wallet=wallet, archive=False).order_by('stock')
 
@@ -214,6 +228,9 @@ def show_wallet_detail(request):
             CurrencyCurrentValue.objects.filter(foreign_currency__symbol=currency_symbol).order_by("-datetime_value")[0]
 
         print(most_recent_currency_day_value)
+        total_investment_in_stock += round(share.nb *
+                                           stock_price[0].close *
+                                           most_recent_currency_day_value.ratio_foreign_to_home_currency, 2)
         current_total_prices_in_home_currency[share.stock.symbol] = \
             str(round(share.nb *
                       stock_price[0].close *
@@ -228,6 +245,7 @@ def show_wallet_detail(request):
 
     shares_in_wallet_and_archived = Share.objects.filter(wallet=wallet, archive=True).order_by('stock')
 
+    total_return = round(total_sell - total_buy + total_investment_in_stock - total_transaction_fees, 2)
     context = {
         'current_shares_prices_by_stocks': current_shares_prices_by_stocks,
         'current_total_prices_in_home_currency': current_total_prices_in_home_currency,
@@ -235,7 +253,8 @@ def show_wallet_detail(request):
         'shares': shares_in_wallet_and_not_archived,
         'shares_archived': shares_in_wallet_and_archived,
         'wallet': wallet,
-        'transactions': wallet_transactions
+        'transactions': wallet_transactions,
+        'total_return': total_return
     }
 
     return render(request, "show_wallet_detail.html", context=context)

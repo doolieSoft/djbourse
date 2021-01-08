@@ -11,10 +11,16 @@
 <div class="container-fluid m-1">
     <div class="col-12">
         <br/>
-        <a href="{% url 'index' %}">Retour à la page d'accueil</a>
+        <div class="row">
+            <a href="{% url 'index' %}">Retour à la page d'accueil</a>
+        </div>
         <br/>
         <div class="row">
+            <p>Rendement global du portefeuille : {{ total_return }}</p>
+        </div>
+        <div class="row">
             <h1>{{wallet.name}}</h1>
+
             <table class="table table-sm table-bordered table-hover">
                 <thead class="thead-light">
                 <th>Action</th>
@@ -56,10 +62,16 @@
                 </thead>
                 <tbody>
                 {% for transaction in transactions %}
-                <tr>
+                {% if transaction.type == "Vente" %}
+                <tr style="background-color: #a7a7e5">
+                    {% else %}
+                <tr style="background-color: #e5e5a7">
+                    {% endif %}
                     <td>{{ transaction.stock.symbol }}</td>
                     <td>{{ transaction.nb }}</td>
-                    <td>{{ transaction.price_in_foreign_currency }} {{ transaction.currency_transaction_value.foreign_currency.symbol }}</td>
+                    <td>{{ transaction.price_in_foreign_currency }}
+                        {{ transaction.currency_transaction_value.foreign_currency.symbol }}
+                    </td>
                     <td>{{ transaction.date }}</td>
                     <td>{{ transaction.type }}</td>
                 </tr>
@@ -68,7 +80,7 @@
             </table>
         </div>
         <div class="row">
-            <h2>Archive de {{ wallet.name }}</h2>
+            <h4>Actions qui ne sont plus dans le portefeuille</h4>
             <table class="table table-sm table-bordered table-hover">
                 <thead class="thead-light">
                 <th>Action</th>

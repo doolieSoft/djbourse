@@ -7,7 +7,7 @@ from .models import StockPrice, Stock, Wallet, Transaction, AlphaVantageApiKey, 
 class ShareAdmin(admin.ModelAdmin):
     model = Share
 
-    fields = ['nb', 'pmp_in_home_currency', 'pmp_in_foreign_currency', 'wallet', 'stock',
+    fields = ['nb', 'pmp_in_foreign_currency', 'wallet', 'stock',
               'currency_day_value', 'total_price_in_foreign_currency', 'total_price_in_home_currency', 'archive']
 
     readonly_fields = ('total_price_in_foreign_currency', 'total_price_in_home_currency',)
