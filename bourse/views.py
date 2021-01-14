@@ -220,8 +220,7 @@ def show_wallet_detail(request):
     shares_benef_by_stock = {}
     for share in shares_in_wallet_and_not_archived:
         stock_price = StockPrice.objects.filter(stock=share.stock).order_by("-date")
-        current_shares_prices_by_stocks[share.stock.symbol] = str(
-            stock_price[0].close) + " " + share.currency_day_value.foreign_currency.symbol
+        current_shares_prices_by_stocks[share.stock.symbol] = stock_price[0].close
 
         currency_symbol = share.currency_day_value.foreign_currency.symbol
         most_recent_currency_day_value = \
@@ -232,9 +231,9 @@ def show_wallet_detail(request):
                                            stock_price[0].close *
                                            most_recent_currency_day_value.ratio_foreign_to_home_currency, 2)
         current_total_prices_in_home_currency[share.stock.symbol] = \
-            str(round(share.nb *
+            round(share.nb *
                       stock_price[0].close *
-                      most_recent_currency_day_value.ratio_foreign_to_home_currency, 2)) + " €"
+                      most_recent_currency_day_value.ratio_foreign_to_home_currency, 2)
 
         benef = round((share.nb *
                        stock_price[0].close *

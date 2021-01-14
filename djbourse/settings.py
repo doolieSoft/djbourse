@@ -115,3 +115,5 @@ USE_TZ = True
 STATIC_URL = '/static/'
 
 DATE_FORMAT = 'Y/m/d'
+
+DECIMAL_SEPARATOR = ','
