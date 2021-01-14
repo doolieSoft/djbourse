@@ -10,7 +10,7 @@ This page shows shares in wallet, their performance, and it lists the transactio
 Below is an example of the page which show percentage diff by period for all stocks. Stocks can be put in *favorite table*, in *monitored table*, or in *not monitored table*.
 Each cell has a color depending on level of difference between current price and previous price.
 
-![](images/get_diff_for_all_periods_and_all_stocks.png)
+![](images/get_diff_for_all_periods_and_all_stocks_v1.png)
 ![](images/actions_non_suivies.png)
 
 ## .BAT Example for prices update (run each day)
