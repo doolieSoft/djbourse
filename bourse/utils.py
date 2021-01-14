@@ -42,7 +42,7 @@ def get_differences_by_stock(differences_by_period, stock):
     line_by_stock = []
     for period in differences_by_period.keys():
         if stock.symbol not in differences_by_period[period]:
-            line_by_stock.append("0.0")
+            line_by_stock.append("")
         else:
             line_by_stock.append(round(differences_by_period[period][stock.symbol], 2))
 

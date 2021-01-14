@@ -1,0 +1,10 @@
+{% extends "base_without_menu.html" %}
+{% block content %}
+<div class = "container">
+	<h1>Stock Form</h1>
+	<form method = 'POST' action= '' enctype = "multipart/form-data" novalidate id = "stock-form">{% csrf_token %}
+		{{form.as_p}}
+		<input type="submit" value = "Submit" />
+	</form>
+</div>
+{% endblock %}

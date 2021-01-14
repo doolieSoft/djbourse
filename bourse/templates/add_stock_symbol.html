@@ -1,17 +1,5 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
-          integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z" crossorigin="anonymous">
-</head>
-<body>
-<div class="container-fluid m-1">
-    <div class="col-12">
-        <br/>
-        <a href="{% url 'index' %}">Retour à la page d'accueil</a>
-        <br/>
+{% extends "base.html" %}
+{% block content %}
         <p>Clé Alphavantage :</p>
             {% for key in keys %}
             <div class="form-group">
@@ -20,7 +8,7 @@
             </div>
             {% endfor %}
 
-        <form method="post" action="add_stock_symbol" class="form-horizontal">
+        <form method="post" action="/stock/create" class="form-horizontal">
             {% csrf_token %}
             <div class="form-group">
                 <label class="font-weight-bold col-sm-2" for="symbol">Symbole</label>
@@ -64,5 +52,4 @@
     }
 
 </script>
-</body>
-</html>
+{% endblock content %}

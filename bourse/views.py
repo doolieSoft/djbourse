@@ -1,8 +1,10 @@
+import json
 from datetime import datetime, timedelta
-
+from django.http import HttpResponse
 from django.shortcuts import redirect, render
+from django.views.decorators.csrf import csrf_exempt
 
-from .forms import StockListForm
+from .forms import StockListForm, StockForm
 from .models import Stock, AlphaVantageApiKey, CHOICES_TYPE_TRANSACTION, Wallet, Share, StockPrice, \
     CurrencyCurrentValue, Transaction
 from .utils import insert_new_stock_in_model, \
@@ -125,7 +127,6 @@ def add_stock_symbol(request):
         context = {"keys": keys}
         return render(request, "add_stock_symbol.html", context=context)
     elif request.method == "POST":
-        print(request.POST["symbol"] + " " + request.POST["name"])
         stock = Stock()
         stock.symbol = request.POST["symbol"].strip()
         stock.name = request.POST["name"].strip()
@@ -144,10 +145,30 @@ def add_transaction(request):
     return render(request, "add_transaction.html", context=context)
 
 
+def stock_create_popup(request):
+    form = StockForm(request.POST or None)
+    if form.is_valid():
+        instance = form.save()
+
+        ## Change the value of the "#id_author". This is the element id in the form
+
+        return HttpResponse(
+            '<script>opener.closePopup(window, "%s", "%s", "#id_stock");</script>' % (instance.pk, instance))
+
+    return render(request, "stock_form.html", {"form":form})
+
+@csrf_exempt
+def get_stock_id(request):
+	if request.is_ajax():
+		stock_name = request.GET['stock_name']
+		stock_id = Stock.objects.get(name = stock_name).id
+		data = {'stock_id':stock_id,}
+		return HttpResponse(json.dumps(data), content_type='application/json')
+	return HttpResponse("/")
+
 def unset_monitored(request):
     if request.method == "POST":
         symbol, name, *rest = request.POST['symbol'].split(" ")
-        print(symbol)
         stock = Stock.objects.get(symbol=symbol)
         stock.monitored = False
         stock.save()
@@ -157,9 +178,7 @@ def unset_monitored(request):
 
 def set_monitored(request):
     if request.method == "POST":
-        print(request.POST['symbol'])
         symbol, name, *rest = request.POST['symbol'].split(" ")
-        print(symbol)
         stock = Stock.objects.get(symbol=symbol.strip())
         stock.monitored = True
         stock.save()
@@ -168,9 +187,7 @@ def set_monitored(request):
 
 def set_favorite(request):
     if request.method == "POST":
-        print(request.POST['symbol'])
         symbol, name, *rest = request.POST['symbol'].split(" ")
-        print(symbol)
         stock = Stock.objects.get(symbol=symbol.strip())
         stock.is_favorite = True
         stock.monitored = False
@@ -180,9 +197,7 @@ def set_favorite(request):
 
 def unset_favorite(request):
     if request.method == "POST":
-        print(request.POST['symbol'])
         symbol, name, *rest = request.POST['symbol'].split(" ")
-        print(symbol)
         stock = Stock.objects.get(symbol=symbol.strip())
         stock.is_favorite = False
         stock.monitored = True
@@ -226,7 +241,6 @@ def show_wallet_detail(request):
         most_recent_currency_day_value = \
             CurrencyCurrentValue.objects.filter(foreign_currency__symbol=currency_symbol).order_by("-datetime_value")[0]
 
-        print(most_recent_currency_day_value)
         total_investment_in_stock += round(share.nb *
                                            stock_price[0].close *
                                            most_recent_currency_day_value.ratio_foreign_to_home_currency, 2)
@@ -239,7 +253,6 @@ def show_wallet_detail(request):
                        stock_price[0].close *
                        most_recent_currency_day_value.ratio_foreign_to_home_currency) - share.total_price_in_home_currency,
                       2)
-        print(benef)
         shares_benef_by_stock[share.stock.symbol] = benef
 
     shares_in_wallet_and_archived = Share.objects.filter(wallet=wallet, archive=True).order_by('stock')

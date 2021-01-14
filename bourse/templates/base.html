@@ -6,49 +6,57 @@
     <script src="https://code.jquery.com/jquery-3.5.1.js"></script>
     <script src="https://cdn.datatables.net/1.10.23/js/jquery.dataTables.min.js"></script>
     <script src="https://cdn.datatables.net/1.10.23/js/dataTables.bootstrap4.min.js"></script>
-
-    <link rel="stylesheet" type="text/css" href="{% static 'bourse/css/jquery.dataTables.css' %}">
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
           integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z" crossorigin="anonymous">
-    <link rel="stylesheet" type="text/css" href="{% static 'bourse/css/bourse.css' %}">
-    <title>Index</title>
     <link rel="preconnect" href="https://fonts.gstatic.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Patrick+Hand&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" type="text/css" href="{% static 'bourse/css/jquery.dataTables.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'bourse/css/bourse.css' %}">
+    <script src="{% static 'fontawesome_free/js/all.min.js' %}"></script>
+    <title>Index</title>
     <style>
         .font-google {
             font-family: 'Patrick Hand', cursive;font-size:20px;
         }
-
-
     </style>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous" defer></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous" defer></script>
+
 </head>
 <body class="font-google">
 <nav class="navbar navbar-expand-md navbar-dark bg-dark">
-    <div class="container-fluid">
-        <a class="navbar-brand" href="#">DJBourse</a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarsExampleDefault"
-                aria-controls="navbarsExampleDefault" aria-expanded="false" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
-        </button>
+    <a class="navbar-brand" href="#">DJBourse</a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarsExampleDefault"
+            aria-controls="navbarsExampleDefault" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+    </button>
 
-        <div class="collapse navbar-collapse" id="navbarsExampleDefault">
-            <ul class="navbar-nav me-auto mb-2 mb-md-0">
-                <li class="{% if request.resolver_match.url_name == 'index' %}active{% endif %}">
-                    <a class="nav-link" href="{% url 'index' %}">Home</a>
-                </li>
-                <li class="{% if request.resolver_match.url_name == 'show-wallet-detail' %}active{% endif %}">
-                    <a class="nav-link" href="{% url 'show-wallet-detail' %}">Portefeuille</a>
-                </li>
-                <li class="{% if request.resolver_match.url_name == 'get-diff-for-all-periods-and-all-stocks' %}active{% endif %}">
-                    <a class="nav-link" href="{% url 'get-diff-for-all-periods-and-all-stocks' %}">Différence par action
-                        pour toutes les périodes</a>
-                </li>
-                <li class="{% if request.resolver_match.url_name == 'add-transaction' %}active{% endif %}">
-                    <a class="nav-link" href="{% url 'add-transaction' %}">Ajouter une transaction</a>
-                </li>
-            </ul>
-        </div>
+    <div class="collapse navbar-collapse" id="navbarsExampleDefault">
+        <ul class="navbar-nav me-auto mb-2 mb-md-0">
+            <li class="{% if request.resolver_match.url_name == 'index' %}active{% endif %}">
+                <a class="nav-link" href="{% url 'index' %}">Home</a>
+            </li>
+            <li class="{% if request.resolver_match.url_name == 'show-wallet-detail' %}active{% endif %}">
+                <a class="nav-link" href="{% url 'show-wallet-detail' %}">Portefeuille</a>
+            </li>
+            <li class="{% if request.resolver_match.url_name == 'get-diff-for-all-periods-and-all-stocks' %}active{% endif %}">
+                <a class="nav-link" href="{% url 'get-diff-for-all-periods-and-all-stocks' %}">Actions Suivies</a>
+            </li>
+            <li class="nav-item dropdown">
+                <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownTransaction" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Transaction</a>
+                <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+                  <a class="dropdown-item" href="{% url 'add-transaction' %}">Ajouter</a>
+                </div>
+            </li>
+            <li class="nav-item dropdown">
+                <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownAction" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Action</a>
+                <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+                  <a class="dropdown-item" href="{% url 'add-stock-symbol' %}">Ajouter</a>
+                </div>
+            </li>
+        </ul>
     </div>
 </nav>
 <div class="container-fluid mt-3">
@@ -57,5 +65,7 @@
         {% endblock content %}
     </div>
 </div>
+{% block script %}
+{% endblock script %}
 </body>
 </html>
