@@ -1,18 +1,8 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
-          integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z" crossorigin="anonymous">
-    <script src="https://kit.fontawesome.com/d583ef33d2.js" crossorigin="anonymous"></script>
-</head>
-<body>
-<div class="container-fluid m-1">
+{% extends 'base.html'%}
+
+{% block content %}
+<div class="container-fluid pt-2 m-1">
     <div class="col-12">
-        <br/>
-        <a href="{% url 'index' %}">Retour à la page d'accueil</a>
-        <br/>
         <table class="table table-sm table-bordered table-hover">
             <caption>Actions favorites</caption>
             <thead class="thead-light">
@@ -154,5 +144,4 @@
         </table>
     </div>
 </div>
-</body>
-</html>
+{% endblock content %}

@@ -1,18 +1,7 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="utf-8">
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
-          integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z" crossorigin="anonymous">
+{% extends 'base.html' %}
 
-    <title>Upload des actions</title>
-</head>
-
-<body>
+{% block content %}
 <div class="container m-1">
-<br/>
-<a href="{% url 'index' %}">Retour à la page d'accueil</a>
-<br/>
 <form action="{% url 'upload-stocks-symbol' %}" method="post" enctype="multipart/form-data">
     {% csrf_token %}
     {{ message }}
@@ -28,5 +17,4 @@
     <p><input type="submit" value="Upload"/></p>
 </form>
 </div>
-</body>
-</html>
+{% endblock content %}

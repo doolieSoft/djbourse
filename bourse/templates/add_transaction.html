@@ -1,17 +1,8 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
-          integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z" crossorigin="anonymous">
-</head>
-<body>
+{% extends 'base.html' %}
+
+{% block content %}
 <div class="container-fluid m-1">
     <div class="col-12">
-        <br/>
-        <a href="{% url 'index' %}">Retour à la page d'accueil</a>
-        <br/>
         <form method="post" class="form-horizontal">
             {% csrf_token %}
             <div class="form-group">
@@ -58,5 +49,4 @@
         </form>
     </div>
 </div>
-</body>
-</html>
+{% endblock content %}
