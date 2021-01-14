@@ -1,24 +1,28 @@
 {% load dict_key %}
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <script src="https://code.jquery.com/jquery-3.5.1.js" ></script>
+    <script src="https://cdn.datatables.net/1.10.23/js/jquery.dataTables.min.js" ></script>
+    <script src="https://cdn.datatables.net/1.10.23/js/dataTables.bootstrap4.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="{% static 'bourse/css/jquery.dataTables.css' %}">
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
           integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z" crossorigin="anonymous">
+    <link rel="stylesheet" type="text/css" href="{% static 'bourse/css/bourse.css' %}">
     <title>Index</title>
 </head>
 <body>
-<div class="container-fluid m-1">
+<div class="container-fluid">
     <div class="col-12">
-        <br/>
         <div class="row">
             <a href="{% url 'index' %}">Retour à la page d'accueil</a>
         </div>
-        <br/>
-        <div class="row">
-            <p>Rendement global du portefeuille : {{ total_return }}</p>
+        <div class="row mt-2">
+            Rendement global du portefeuille : {{ total_return }}
         </div>
-        <div class="row">
+        <div class="row mt-2">
             <h1>{{wallet.name}}</h1>
 
             <table class="table table-sm table-bordered table-hover">
@@ -50,9 +54,11 @@
                 {% endfor %}
             </table>
         </div>
-        <div class="row">
-            <h2>Liste des transactions</h2>
-            <table class="table table-sm table-bordered table-hover">
+        <div class="row mt-2">
+        <h1>Liste des transactions</h1>
+        </div>
+        <div class="row mt-2">
+            <table id="table_transaction" class="table compact row-border table-hover display">
                 <thead class="thead-light">
                 <th>Action</th>
                 <th>Nombre</th>
@@ -63,9 +69,9 @@
                 <tbody>
                 {% for transaction in transactions %}
                 {% if transaction.type == "Vente" %}
-                <tr style="background-color: #a7a7e5">
+                <tr class="even">
                     {% else %}
-                <tr style="background-color: #e5e5a7">
+                <tr class="odd">
                     {% endif %}
                     <td>{{ transaction.stock.symbol }}</td>
                     <td>{{ transaction.nb }}</td>
@@ -94,8 +100,17 @@
                 </tbody>
             </table>
         </div>
-
     </div>
 </div>
+<script defer>
+    $(document).ready( function () {
+        $('#table_transaction').DataTable({
+            "order": [[ 3, "desc" ]],
+            "language": {
+            "url": "//cdn.datatables.net/plug-ins/1.10.22/i18n/French.json"
+            }
+        });
+    } );
+</script>
 </body>
 </html>

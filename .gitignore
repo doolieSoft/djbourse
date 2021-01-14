@@ -5,3 +5,7 @@
 /update_prices.bat
 /bourse/migrations/
 /db_backup.sqlite3
+bourse/__pycache__/
+bourse/templatetags/__pycache__/
+djbourse/__pycache__/
+utils/__pycache__/

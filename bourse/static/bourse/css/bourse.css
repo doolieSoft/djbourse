@@ -1,0 +1,20 @@
+
+table.dataTable.display tbody tr.odd{
+background-color:#cdeef4;
+}
+
+table.dataTable.display tbody tr.even{
+background-color:#cdf4e7;
+}
+
+table.dataTable.display tbody tr.odd:hover{
+background-color:#cdeef470;
+}
+
+table.dataTable.display tbody tr.even:hover{
+background-color:#cdf4e77c;
+}
+
+div.dataTables_wrapper {
+    width: 100%;
+}
