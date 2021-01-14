@@ -11,8 +11,16 @@
           integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z" crossorigin="anonymous">
     <link rel="stylesheet" type="text/css" href="{% static 'bourse/css/bourse.css' %}">
     <title>Index</title>
+    <link rel="preconnect" href="https://fonts.gstatic.com">
+<link rel="preconnect" href="https://fonts.gstatic.com">
+<link href="https://fonts.googleapis.com/css2?family=Patrick+Hand&display=swap" rel="stylesheet">    <style>
+        .font-google {
+            font-family: 'Patrick Hand', cursive;font-size:20px;
+        }
+
+    </style>
 </head>
-<body>
+<body class="font-google">
 <nav class="navbar navbar-expand-md navbar-dark bg-dark">
     <div class="container-fluid">
       <a class="navbar-brand" href="#">DJBourse</a>
@@ -37,7 +45,7 @@
         </ul>
       </div>
     </div>
-  </nav>
+</nav>
 
 {% block content %}
 {% endblock content %}
