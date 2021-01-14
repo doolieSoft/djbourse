@@ -1,8 +1,7 @@
 {% extends 'base.html'%}
 
 {% block content %}
-<div class="container-fluid pt-2 m-1">
-    <div class="col-12">
+    <div class="row">
         <table class="table table-sm table-bordered table-hover">
             <caption>Actions favorites</caption>
             <thead class="thead-light">
@@ -50,7 +49,7 @@
             {% endfor %}
             </tbody>
         </table>
-        <table class="table table-sm table-bordered table-hover">
+        <table id="table_actions_suivies" class="table table-sm table-bordered table-hover">
             <caption>Actions suivies</caption>
             <thead class="thead-light">
             <th>Symbole</th>
@@ -142,6 +141,44 @@
             {% endfor %}
             </tbody>
         </table>
-    </div>
-</div>
+        </div>
+<script defer>
+    $(document).ready( function () {
+        $.extend( $.fn.dataTableExt.oSort, {
+        "numeric-comma-pre": function ( a ) {
+            var x = (a == "-") ? 0 : a.replace( /,/, "." );
+            return parseFloat( x );
+        },
+
+        "numeric-comma-asc": function ( a, b ) {
+            return ((a < b) ? -1 : ((a > b) ? 1 : 0));
+        },
+
+        "numeric-comma-desc": function ( a, b ) {
+            return ((a < b) ? 1 : ((a > b) ? -1 : 0));
+        }
+        });
+        $('#table_actions_suivies').DataTable({
+            "order": [[ 0, "asc" ]],
+            "paging":   false,
+            "searching": false,
+            "language": {
+            "url": "//cdn.datatables.net/plug-ins/1.10.22/i18n/French.json"
+            },
+            columnDefs: [
+                { targets: 1, type: 'numeric-comma' },
+                { targets: 2, type: 'numeric-comma' },
+                { targets: 3, type: 'numeric-comma' },
+                { targets: 4, type: 'numeric-comma' },
+                { targets: 5, type: 'numeric-comma' },
+                { targets: 6, type: 'numeric-comma' },
+                { targets: 7, type: 'numeric-comma' },
+                { targets: 8, type: 'numeric-comma' },
+                { targets: 9, type: 'numeric-comma' },
+            ]
+
+        });
+    } );
+</script>
+
 {% endblock content %}

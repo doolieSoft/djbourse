@@ -4,11 +4,8 @@
 
 
 {% block content %}
-<div class="container-fluid">
-    <div class="col-12">
-        <div class="row mt-2">
-            <div style="width:100%;" class="row d-flex justify-content-between"><h1>{{wallet.name}}</h1><h5>Rendement global du portefeuille : <b style="color:blue;">{{ total_return }}</b></h5></div>
-
+        <div class="row">
+            <div style="width:100%;" class="d-flex justify-content-between"><h1>{{wallet.name}}</h1><h5>Rendement global du portefeuille : <b style="color:blue;">{{ total_return }}</b></h5></div>
             <table class="table table-sm table-bordered table-hover">
                 <thead class="thead-light">
                 <th>Action</th>
@@ -52,11 +49,7 @@
                 </thead>
                 <tbody>
                 {% for transaction in transactions %}
-                {% if transaction.type == "Vente" %}
-                <tr class="even">
-                    {% else %}
-                <tr class="odd">
-                    {% endif %}
+                <tr>
                     <td>{{ transaction.stock.symbol }}</td>
                     <td>{{ transaction.nb }}</td>
                     <td>{{ transaction.price_in_foreign_currency }}
@@ -84,12 +77,28 @@
                 </tbody>
             </table>
         </div>
-    </div>
-</div>
 <script defer>
     $(document).ready( function () {
+        $.extend( $.fn.dataTableExt.oSort, {
+        "numeric-comma-pre": function ( a ) {
+            var x = (a == "-") ? 0 : a.replace( /,/, "." );
+            return parseFloat( x );
+        },
+
+        "numeric-comma-asc": function ( a, b ) {
+            return ((a < b) ? -1 : ((a > b) ? 1 : 0));
+        },
+
+        "numeric-comma-desc": function ( a, b ) {
+            return ((a < b) ? 1 : ((a > b) ? -1 : 0));
+        }
+        });
+
         $('#table_transaction').DataTable({
             "order": [[ 3, "desc" ]],
+            "columnDefs": [
+                { targets: 2, type: 'numeric-comma' }
+                ],
             "language": {
             "url": "//cdn.datatables.net/plug-ins/1.10.22/i18n/French.json"
             }
