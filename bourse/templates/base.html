@@ -15,7 +15,10 @@
     <link rel="stylesheet" type="text/css" href="{% static 'bourse/css/jquery.dataTables.css' %}">
     <link rel="stylesheet" type="text/css" href="{% static 'bourse/css/bourse.css' %}">
     <script src="{% static 'fontawesome_free/js/all.min.js' %}"></script>
-    <title>Index</title>
+    <title>
+    {% block title%}
+    {% endblock title %}
+    </title>
     <style>
         .font-google {
             font-family: 'Patrick Hand', cursive;font-size:20px;
