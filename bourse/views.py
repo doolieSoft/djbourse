@@ -69,13 +69,21 @@ def upload_stocks_symbol(request):
 def get_diff_for_all_periods_and_all_stocks(request):
     dt_from = datetime.now()
 
-    prices_for_last_opened_day = get_prices_for_date(dt_from)
+    monitored_stocks = Stock.objects.filter(monitored=True)
+    favorite_stocks = Stock.objects.filter(is_favorite=True)
+
+    monitored_and_favorite_stocks_symbols = [stock.symbol for stock in monitored_stocks]
+    monitored_and_favorite_stocks_symbols.extend([stock.symbol for stock in favorite_stocks])
+    prices_for_last_opened_day = get_prices_for_date(dt_from, monitored_and_favorite_stocks_symbols)
     i = 0
-    while not prices_for_last_opened_day:
+
+    no_price_found = False
+    while prices_for_last_opened_day is None:
         dt_from = dt_from - timedelta(days=1)
-        prices_for_last_opened_day = get_prices_for_date(dt_from)
+        prices_for_last_opened_day = get_prices_for_date(dt_from, monitored_and_favorite_stocks_symbols)
         i += 1
         if i > 5:
+            no_price_found = True
             break
 
     differences_by_period = {}
@@ -83,11 +91,11 @@ def get_diff_for_all_periods_and_all_stocks(request):
     for period in all_periods:
         dt_to = dt_from - timedelta(days=period)
 
-        prices_for_last_opened_day_of_period = get_prices_for_date(dt_to)
+        prices_for_last_opened_day_of_period = get_prices_for_date(dt_to, monitored_and_favorite_stocks_symbols)
         i = 0
-        while not prices_for_last_opened_day_of_period:
+        while prices_for_last_opened_day_of_period is None:
             dt_to = dt_to - timedelta(days=1)
-            prices_for_last_opened_day_of_period = get_prices_for_date(dt_to)
+            prices_for_last_opened_day_of_period = get_prices_for_date(dt_to, monitored_and_favorite_stocks_symbols)
             i += 1
             if i > 5:
                 break
@@ -99,8 +107,8 @@ def get_diff_for_all_periods_and_all_stocks(request):
         period_headers[period] = period
 
     differences_by_monitored_stocks = []
-    monitored_stocks = Stock.objects.filter(monitored=True).order_by('symbol')
-    for stock in monitored_stocks:
+    ordered_monitored_stocks = monitored_stocks.order_by('symbol')
+    for stock in ordered_monitored_stocks:
         differences_by_monitored_stocks.append(get_differences_by_stock(differences_by_period, stock))
 
     stocks_not_monitored = []
@@ -155,16 +163,18 @@ def stock_create_popup(request):
         return HttpResponse(
             '<script>opener.closePopup(window, "%s", "%s", "#id_stock");</script>' % (instance.pk, instance))
 
-    return render(request, "stock_form.html", {"form":form})
+    return render(request, "stock_form.html", {"form": form})
+
 
 @csrf_exempt
 def get_stock_id(request):
-	if request.is_ajax():
-		stock_name = request.GET['stock_name']
-		stock_id = Stock.objects.get(name = stock_name).id
-		data = {'stock_id':stock_id,}
-		return HttpResponse(json.dumps(data), content_type='application/json')
-	return HttpResponse("/")
+    if request.is_ajax():
+        stock_name = request.GET['stock_name']
+        stock_id = Stock.objects.get(name=stock_name).id
+        data = {'stock_id': stock_id, }
+        return HttpResponse(json.dumps(data), content_type='application/json')
+    return HttpResponse("/")
+
 
 def unset_monitored(request):
     if request.method == "POST":
@@ -246,8 +256,8 @@ def show_wallet_detail(request):
                                            most_recent_currency_day_value.ratio_foreign_to_home_currency, 2)
         current_total_prices_in_home_currency[share.stock.symbol] = \
             round(share.nb *
-                      stock_price[0].close *
-                      most_recent_currency_day_value.ratio_foreign_to_home_currency, 2)
+                  stock_price[0].close *
+                  most_recent_currency_day_value.ratio_foreign_to_home_currency, 2)
 
         benef = round((share.nb *
                        stock_price[0].close *
