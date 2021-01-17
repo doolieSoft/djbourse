@@ -29,6 +29,8 @@
 
 </head>
 <body class="font-google">
+{% if popup %}
+{% else %}
 <nav class="navbar navbar-expand-md navbar-dark bg-dark">
     <a class="navbar-brand" href="#">DJBourse</a>
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarsExampleDefault"
@@ -45,23 +47,24 @@
                 <a class="nav-link" href="{% url 'show-wallet-detail' %}">Portefeuille</a>
             </li>
             <li class="{% if request.resolver_match.url_name == 'get-diff-for-all-periods-and-all-stocks' %}active{% endif %}">
-                <a class="nav-link" href="{% url 'get-diff-for-all-periods-and-all-stocks' %}">Actions Suivies</a>
+                <a class="nav-link" href="{% url 'show-stocks-followed' %}">Actions Suivies</a>
             </li>
             <li class="nav-item dropdown">
                 <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownTransaction" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Transaction</a>
                 <div class="dropdown-menu" aria-labelledby="navbarDropdown">
-                  <a class="dropdown-item" href="{% url 'add-transaction' %}">Ajouter</a>
+                  <a class="dropdown-item" href="{% url 'transaction-create' %}">Ajouter</a>
                 </div>
             </li>
             <li class="nav-item dropdown">
                 <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownAction" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Action</a>
                 <div class="dropdown-menu" aria-labelledby="navbarDropdown">
-                  <a class="dropdown-item" href="{% url 'add-stock-symbol' %}">Ajouter</a>
+                  <a class="dropdown-item" href="{% url 'stock-create' %}">Ajouter</a>
                 </div>
             </li>
         </ul>
     </div>
 </nav>
+{% endif %}
 <div class="container-fluid mt-3">
     <div class="col-12">
         {% block content %}

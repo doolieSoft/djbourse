@@ -1,12 +1,14 @@
 import json
 from datetime import datetime, timedelta
+
+from django.core.serializers import serialize
 from django.http import HttpResponse
 from django.shortcuts import redirect, render
-from django.views.decorators.csrf import csrf_exempt
+from django.views.generic import CreateView
 
-from .forms import StockListForm, StockForm
-from .models import Stock, AlphaVantageApiKey, CHOICES_TYPE_TRANSACTION, Wallet, Share, StockPrice, \
-    CurrencyCurrentValue, Transaction
+from .forms import StockListForm, StockNewForm, TransactionNewForm, CurrencyCurrentValueNewForm
+from .models import Stock, AlphaVantageApiKey, Wallet, Share, StockPrice, \
+    CurrencyCurrentValue, Transaction, Currency
 from .utils import insert_new_stock_in_model, \
     calculate_and_get_diff_for_period, \
     get_differences_by_stock, \
@@ -66,7 +68,7 @@ def upload_stocks_symbol(request):
 
 
 # Cette méthode va calculer la différence en pourcentage par période
-def get_diff_for_all_periods_and_all_stocks(request):
+def show_stocks_followed(request):
     dt_from = datetime.now()
 
     monitored_stocks = Stock.objects.filter(monitored=True)
@@ -126,7 +128,7 @@ def get_diff_for_all_periods_and_all_stocks(request):
         "differences_by_monitored_stocks": differences_by_monitored_stocks,
         "stocks_not_monitored": stocks_not_monitored
     }
-    return render(request, "diff_for_all_periods_for_all_stocks.html", context)
+    return render(request, "show_stock_followed.html", context)
 
 
 def add_stock_symbol(request):
@@ -143,37 +145,115 @@ def add_stock_symbol(request):
         return redirect("index")
 
 
-def add_transaction(request):
-    types_transaction = CHOICES_TYPE_TRANSACTION
-    stocks = Stock.objects.all()
-    context = {
-        "stocks": stocks,
-        "types_transaction": types_transaction
-    }
-    return render(request, "add_transaction.html", context=context)
+class TransactionCreate(CreateView):
+    model = Transaction
+    form_class = TransactionNewForm
+    template_name = 'add_transaction.html'
+    success_url = "/"
 
 
-def stock_create_popup(request):
-    form = StockForm(request.POST or None)
-    if form.is_valid():
-        instance = form.save()
+def transaction_create(request):
+    if request.method == "GET":
+        form = TransactionNewForm()
+        context = {"form": form}
+        return render(request, 'add_transaction.html', context=context)
 
-        ## Change the value of the "#id_author". This is the element id in the form
+    elif request.method == "POST":
+        form = TransactionNewForm(request.POST)
+        if form.is_valid():
+            share = Share.objects.filter(stock=form.cleaned_data["stock"]).first()
+            if share is None:
+                share = Share.objects.create(stock=form.cleaned_data["stock"],
+                                             nb=form.cleaned_data["nb"],
+                                             wallet=form.cleaned_data["wallet"],
+                                             pmp_in_foreign_currency=form.cleaned_data["price_in_foreign_currency"],
+                                             currency_day_value=form.cleaned_data["currency_current_value"])
+                share.save()
+                transaction = form.save()
+                transaction.share = share
+                transaction.save()
+            else:
+                total_pmp_price = share.nb * share.pmp_in_foreign_currency
+                new_share_total_price = form.cleaned_data["nb"] * form.cleaned_data["price_in_foreign_currency"]
+                new_nb_total_share = share.nb + form.cleaned_data["nb"]
+                share.pmp_in_foreign_currency = (total_pmp_price + new_share_total_price) / new_nb_total_share
+                share.nb = new_nb_total_share
+                share.save()
 
-        return HttpResponse(
-            '<script>opener.closePopup(window, "%s", "%s", "#id_stock");</script>' % (instance.pk, instance))
+                transaction = form.save()
+                transaction.share = share
+                transaction.save()
 
-    return render(request, "stock_form.html", {"form": form})
+            return redirect("show-wallet-detail")
+        else:
+            return render(request, 'add_transaction.html', {"form": form})
 
 
-@csrf_exempt
+def stock_create(request):
+    print(request)
+    if request.method == "GET":
+        keys = AlphaVantageApiKey.objects.all()
+        form = StockNewForm()
+        if request.GET.get("popup"):
+            context = {"keys": keys, "form": form, "popup": 1}
+        else:
+            context = {"keys": keys, "form": form}
+        return render(request, 'add_stock.html', context=context)
+
+    elif request.method == "POST":
+        form = StockNewForm(request.POST)
+        if form.is_valid():
+            id = form.save()
+            return HttpResponse(
+                f'<script type="text/javascript">window.close(); window.opener.setDataStock("{id.pk}");</script>')
+        else:
+            return render(request, 'stock_form.html', {"form": form})
+
+
 def get_stock_id(request):
+    if request.method == "GET":
+        return HttpResponse("OK")
     if request.is_ajax():
-        stock_name = request.GET['stock_name']
-        stock_id = Stock.objects.get(name=stock_name).id
-        data = {'stock_id': stock_id, }
-        return HttpResponse(json.dumps(data), content_type='application/json')
-    return HttpResponse("/")
+        id = request.POST['id']
+        stock = Stock.objects.filter(pk=id)
+        print(id)
+        print(stock)
+        data = serialize("json", stock, fields=("name"))
+        return HttpResponse(data, content_type="application/json")
+
+
+def currency_current_value_create(request):
+    print(request.POST)
+    if request.method == "GET":
+        form = CurrencyCurrentValueNewForm()
+        if request.GET.get("popup"):
+            context = {"form": form, "popup": 1}
+        else:
+            context = {"form": form}
+        return render(request, 'add_currency_current_value.html', context=context)
+
+    elif request.method == "POST":
+        form = CurrencyCurrentValueNewForm(request.POST)
+        if form.is_valid():
+            id = form.save()
+            return HttpResponse(
+                f'<script type="text/javascript">window.close(); window.opener.setDataCurrencyCurrentValue("{id.pk}");</script>')
+        else:
+            return render(request, 'add_currency_current_value.html', {"form": form})
+
+
+def get_currency_current_value_id(request):
+    if request.method == "GET":
+        return HttpResponse("OK")
+    if request.is_ajax():
+        id = request.POST['id']
+        print(id)
+        currencyCurrentValue = CurrencyCurrentValue.objects.get(pk=id)
+        print(str(currencyCurrentValue))
+        currency = Currency.objects.get(pk=currencyCurrentValue.foreign_currency.id)
+        response = json.dumps({"response": str(currencyCurrentValue)})
+
+        return HttpResponse(response, content_type="application/json")
 
 
 def unset_monitored(request):
@@ -183,7 +263,7 @@ def unset_monitored(request):
         stock.monitored = False
         stock.save()
 
-    return redirect("get-diff-for-all-periods-and-all-stocks")
+    return redirect("show-stocks-followed")
 
 
 def set_monitored(request):
@@ -192,7 +272,7 @@ def set_monitored(request):
         stock = Stock.objects.get(symbol=symbol.strip())
         stock.monitored = True
         stock.save()
-    return redirect("get-diff-for-all-periods-and-all-stocks")
+    return redirect("show-stocks-followed")
 
 
 def set_favorite(request):
@@ -202,7 +282,7 @@ def set_favorite(request):
         stock.is_favorite = True
         stock.monitored = False
         stock.save()
-    return redirect("get-diff-for-all-periods-and-all-stocks")
+    return redirect("show-stocks-followed")
 
 
 def unset_favorite(request):
@@ -212,7 +292,7 @@ def unset_favorite(request):
         stock.is_favorite = False
         stock.monitored = True
         stock.save()
-    return redirect("get-diff-for-all-periods-and-all-stocks")
+    return redirect("show-stocks-followed")
 
 
 def show_wallet_detail(request):
@@ -229,14 +309,12 @@ def show_wallet_detail(request):
         if transaction.share.wallet == wallet:
             wallet_transactions.append(transaction)
             total_transaction_fees += round(transaction.transacrion_fees, 2)
+            print(
+                f"{transaction.nb} {transaction.price_in_foreign_currency} {transaction.currency_current_value.ratio_foreign_to_home_currency}")
             if transaction.type == "Vente":
-                total_sell += round(
-                    transaction.nb * transaction.price_in_foreign_currency * transaction.currency_transaction_value.ratio_foreign_to_home_currency,
-                    2)
+                total_sell += transaction.nb * transaction.price_in_foreign_currency * transaction.currency_current_value.ratio_foreign_to_home_currency
             elif transaction.type == "Achat":
-                total_buy += round(
-                    transaction.nb * transaction.price_in_foreign_currency * transaction.currency_transaction_value.ratio_foreign_to_home_currency,
-                    2)
+                total_buy += transaction.nb * transaction.price_in_foreign_currency * transaction.currency_current_value.ratio_foreign_to_home_currency
 
     shares_in_wallet_and_not_archived = shares.filter(wallet=wallet, archive=False).order_by('stock')
 

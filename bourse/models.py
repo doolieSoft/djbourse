@@ -80,8 +80,8 @@ class Transaction(models.Model):
     stock = models.ForeignKey(Stock, on_delete=models.DO_NOTHING, null=True)
     price_in_foreign_currency = models.FloatField(default=0)
     type = models.CharField(max_length=10, choices=CHOICES_TYPE_TRANSACTION, default=ACHAT)
-    currency_transaction_value = models.ForeignKey(to=CurrencyCurrentValue, on_delete=models.DO_NOTHING)
-    share = models.ForeignKey(to=Share, on_delete=models.DO_NOTHING, default=None)
+    currency_current_value = models.ForeignKey(to=CurrencyCurrentValue, on_delete=models.DO_NOTHING)
+    share = models.ForeignKey(to=Share, on_delete=models.DO_NOTHING, null=True, blank=True)
 
     def __str__(self):
         return str(self.type) + " " + str(self.date) + " " + str(self.stock.symbol)

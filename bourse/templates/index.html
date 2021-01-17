@@ -6,16 +6,16 @@
 <h1>Menu</h1>
 <ul>
     <li>
-        <a href="{% url 'add-stock-symbol' %}">Ajouter une action</a>
+        <a href="{% url 'stock-create' %}">Ajouter une action</a>
     </li>
     <li>
-        <a href="{% url 'add-transaction' %}">Ajouter une transaction</a>
+        <a href="{% url 'transaction-create' %}">Ajouter une transaction</a>
     </li>
     <li>
         <a href="{% url 'upload-stocks-symbol' %}">Upload des actions</a>
     </li>
     <li>
-        <a href="{% url 'get-diff-for-all-periods-and-all-stocks' %}">Différence par action pour toutes les périodes</a>
+        <a href="{% url 'show-stocks-followed' %}">Actions suivies</a>
     </li>
     <li>
         <a href="{% url 'show-wallet-detail' %}">Afficher le portefeuille</a>

@@ -7,64 +7,101 @@ DJBourse - Ajouter une transaction
 {% block content %}
 <div class="container-fluid m-1">
     <div class="col-12">
-        <form method="post" class="form-horizontal">
+        <form method="post" action="{% url 'transaction-create' %}" class="form-horizontal">
             {% csrf_token %}
-            <div class="form-group">
-                <label class="font-weight-bold col-sm-2" for="date">Date</label>
-                <div class="col-sm-5">
-                    <input class="form-control" type="date" id="date"/>
-                </div>
-            </div>
-            <div class="form-group">
-                <label class="font-weight-bold col-sm-2" for="quantity">Quantité</label>
-                <div class="col-sm-5">
-                    <input class="form-control" type="text" id="quantity" />
-                </div>
-            </div>
-            <div class="form-group">
-                <label class="font-weight-bold col-sm-2" for="stock">Stock</label>
-                <div class="col-sm-5">
-                    <select class="form-control" id="stock">
-                        {% for stock in stocks%}
-                        <option value="{{stock.id}}">{{stock.name}} ({{stock.symbol}})</option>
-                        {% endfor %}
-                    </select>
-                    <a href="/stock/create" id="add_stock" onclick="return showAddPopup(this);">Add stock</a>
-                </div>
-            </div>
-            <div class="form-group">
-                <label class="font-weight-bold col-sm-2" for="totalValue">Valeur totale</label>
-                <div class="col-sm-5">
-                    <input class="form-control" type="text" id="totalValue" />
-                </div>
-            </div>
-            <div class="form-group">
-                <label class="font-weight-bold col-sm-2" for="quantity">Type</label>
-                <div class="col-sm-5">
-                    <select class="form-control" id="typeTransaction">
-                        {% for type_transaction in types_transaction %}
-                        <option value="{{type_transaction.0}}">{{type_transaction.0}}</option>
-                        {% endfor %}
-                    </select>
-                </div>
-            </div>
-            <div class="form-group">
-              <input type="submit" class="btn btn-primary" value="Ajouter" />
-            </div>
+            {{form.as_p}}
+            <button type="submit">Enregistrer</button>
         </form>
     </div>
 </div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.js"
+        integrity="sha512-WNLxfP/8cVYL9sj8Jnp6et0BkubLP31jhTG9vhL/F5uEZmg5wEzKoXp1kJslzPQWwPT1eyMiSxlKCgzHLOTOTQ=="
+        crossorigin="anonymous"></script>
 <script>
-    function showAddPopup(triggeringLink) {
-    var name = triggeringLink.id.replace(/^add_/, '');
-    href = triggeringLink.href;
-    var win = window.open(href, name, 'height=300,width=500,resizable=yes,scrollbars=yes');
-    win.focus();
-    return false;
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                // Does this cookie string begin with the name we want?
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
     }
-    function closePopup(win, newID, newRepr, id) {
-        $(id).append('<option value=' + newID + ' selected >' + newRepr + '</option>')
-        win.close();
-    }
+    function setDataStock(data) {
+            console.log(data);
+            $.ajax({
+                 url: '{% url 'get-stock-id' %}',
+                 type : 'POST',
+                 headers: {
+                    "X-CSRFToken": getCookie("csrftoken")
+                 },
+                 data: {
+                 "id": data
+                 },
+                 success: function(response) {
+                    let optText = response[0].fields['name'];
+                    let optValue = response[0]['pk'];
+                    $('#id_stock option:selected').removeAttr('selected');
+                    $('#id_stock').append('<option value="'+optValue+'" selected>'+optText+'</option>');
+                    $(':focus').blur()
+                 }
+             });
+        }
+    function setDataCurrencyCurrentValue(data) {
+            console.log(data);
+            $.ajax({
+                 url: '{% url 'get-currency-current-value-id' %}',
+                 type : 'POST',
+                 headers: {
+                    "X-CSRFToken": getCookie("csrftoken")
+                 },
+                 data: {
+                 "id": data
+                 },
+                 success: function(response) {
+                    console.log(response);
+                    let optText = response["response"];
+                    let optValue = data;
+                    $('#id_currency_current_value option:selected').removeAttr('selected');
+                    $('#id_currency_current_value').append('<option value="'+optValue+'" selected>'+optText+'</option>');
+                    $(':focus').blur()
+                 }
+             });
+        }
+        $(document).ready(function() {
+            console.log( "ready!" );
+            document.querySelector('#add_stock').onclick = function () {
+            var href = $(this).attr('href');
+            var popup = window.open(href, '', "width=800, height=600");
+
+            var popupTick = setInterval(function() {
+            if (popup.closed) {
+                clearInterval(popupTick);
+                console.log('window closed!');
+            }
+            }, 500);
+            return false;
+            };
+
+            document.querySelector('#add_currency_current_value').onclick = function () {
+            var href = $(this).attr('href');
+            var popup = window.open(href, '', "width=800, height=600");
+
+            var popupTick = setInterval(function() {
+            if (popup.closed) {
+                clearInterval(popupTick);
+                console.log('window closed!');
+            }
+            }, 500);
+            return false;
+            };
+        });
+
 </script>
 {% endblock content %}

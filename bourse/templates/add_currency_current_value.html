@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+
+{% block title %}
+DJBourse - Ajouter un taux de change
+{% endblock title %}
+
+{% block content %}
+        <form method="post" action="" class="form-horizontal">
+            {% csrf_token %}
+            {{form.as_p}}
+            <div class="form-group">
+              <input type="submit" class="btn btn-primary" value="Ajouter" />
+            </div>
+        </form>
+{% endblock content %}
