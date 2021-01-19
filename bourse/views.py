@@ -2,6 +2,7 @@ import json
 from datetime import datetime, timedelta
 
 from django.core.serializers import serialize
+from django.db.models import Q
 from django.http import HttpResponse
 from django.shortcuts import redirect, render
 from django.views.generic import CreateView
@@ -70,37 +71,23 @@ def upload_stocks_symbol(request):
 # Cette méthode va calculer la différence en pourcentage par période
 def show_stocks_followed(request):
     dt_from = datetime.now()
+    dt_from = dt_from - timedelta(days=1)
 
     monitored_stocks = Stock.objects.filter(monitored=True)
-    favorite_stocks = Stock.objects.filter(is_favorite=True)
+    monitored_and_favorite_stocks = Stock.objects.filter(Q(is_favorite=True) | Q(monitored=True))
 
-    monitored_and_favorite_stocks_symbols = [stock.symbol for stock in monitored_stocks]
-    monitored_and_favorite_stocks_symbols.extend([stock.symbol for stock in favorite_stocks])
-    prices_for_last_opened_day = get_prices_for_date(dt_from, monitored_and_favorite_stocks_symbols)
-    i = 0
+    monitored_and_favorite_stocks_symbols = []
+    for stock in monitored_and_favorite_stocks:
+        monitored_and_favorite_stocks_symbols.append(stock.symbol)
+    prices_for_last_opened_day = get_prices_for_date(dt_from, monitored_and_favorite_stocks_symbols, best_effort=True)
 
-    no_price_found = False
-    while prices_for_last_opened_day is None:
-        dt_from = dt_from - timedelta(days=1)
-        prices_for_last_opened_day = get_prices_for_date(dt_from, monitored_and_favorite_stocks_symbols)
-        i += 1
-        if i > 5:
-            no_price_found = True
-            break
 
     differences_by_period = {}
     period_headers = {}
     for period in all_periods:
         dt_to = dt_from - timedelta(days=period)
 
-        prices_for_last_opened_day_of_period = get_prices_for_date(dt_to, monitored_and_favorite_stocks_symbols)
-        i = 0
-        while prices_for_last_opened_day_of_period is None:
-            dt_to = dt_to - timedelta(days=1)
-            prices_for_last_opened_day_of_period = get_prices_for_date(dt_to, monitored_and_favorite_stocks_symbols)
-            i += 1
-            if i > 5:
-                break
+        prices_for_last_opened_day_of_period = get_prices_for_date(dt_to, monitored_and_favorite_stocks_symbols, best_effort=True)
 
         diff_for_this_period = calculate_and_get_diff_for_period(prices_for_last_opened_day,
                                                                  prices_for_last_opened_day_of_period)
@@ -309,8 +296,7 @@ def show_wallet_detail(request):
         if transaction.share.wallet == wallet:
             wallet_transactions.append(transaction)
             total_transaction_fees += round(transaction.transacrion_fees, 2)
-            print(
-                f"{transaction.nb} {transaction.price_in_foreign_currency} {transaction.currency_current_value.ratio_foreign_to_home_currency}")
+
             if transaction.type == "Vente":
                 total_sell += transaction.nb * transaction.price_in_foreign_currency * transaction.currency_current_value.ratio_foreign_to_home_currency
             elif transaction.type == "Achat":
