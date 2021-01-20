@@ -100,8 +100,8 @@ DJBourse - Actions suivies
                         <td class="table-success">{{ value }}</td>
                         {% elif value > 0 %}
                         <td class="table-info">{{ value }}</td>
-                        {% elif value == "" %}
-                        <td>{{ value }}</td>
+                        {% else %}
+                        <td class="table-secondary">{{ value }}</td>
                         {% endif %}
                     {% endfor %}
                 {% endfor %}
@@ -113,6 +113,7 @@ DJBourse - Actions suivies
             <caption>Actions non suivies</caption>
             <thead class="thead-light">
             <th>Symbole</th>
+            <th></th>
             </thead>
             <tbody>
             {% for stock in stocks_not_monitored %}
@@ -141,6 +142,7 @@ DJBourse - Actions suivies
                         </div>
                     </div>
                 </td>
+                <td></td>
             </tr>
             {% endfor %}
             </tbody>
