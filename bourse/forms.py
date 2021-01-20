@@ -38,7 +38,7 @@ class TransactionNewForm(forms.ModelForm):
         model = Transaction
         fields = (
         'date', 'nb', 'price_in_foreign_currency', 'transacrion_fees', 'stock', 'type', 'currency_current_value')
-        labels = {'date': "Date", 'nb': "Nombre", 'price_in_foreign_currency': "Prix d'achat",
+        labels = {'date': "Date", 'nb': "Nombre", 'price_in_foreign_currency': "Prix",
                   'transacrion_fees': "Frais d'opération", 'type': "Type"}
 
 

@@ -4,7 +4,7 @@
 /.idea/
 /update_prices.bat
 /bourse/migrations/
-/db_backup.sqlite3
+/db.sqlite3
 bourse/__pycache__/
 bourse/templatetags/__pycache__/
 djbourse/__pycache__/

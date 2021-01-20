@@ -168,6 +168,7 @@ def transaction_create(request):
                     share.nb = new_nb_total_share
                 else:
                     share.nb = share.nb - form.cleaned_data["nb"]
+                    share.archive = True
 
                 share.save()
 
