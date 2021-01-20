@@ -45,8 +45,8 @@ DJBourse - Actions suivies
                 <td class="table-success">{{ value }}</td>
                 {% elif value > 0 %}
                 <td class="table-info">{{ value }}</td>
-                {% elif value == "" %}
-                <td></td>
+                {% else %}
+                <td class="table-secondary">{{ value }}</td>
                 {% endif %}
                 {% endfor %}
                 {% endfor %}
