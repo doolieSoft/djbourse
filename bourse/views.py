@@ -9,7 +9,7 @@ from django.views.generic import CreateView
 
 from .forms import StockListForm, StockNewForm, TransactionNewForm, CurrencyCurrentValueNewForm
 from .models import Stock, AlphaVantageApiKey, Wallet, Share, StockPrice, \
-    CurrencyCurrentValue, Transaction, Currency
+    CurrencyCurrentValue, Transaction, Currency, ACHAT
 from .utils import insert_new_stock_in_model, \
     calculate_and_get_diff_for_period, \
     get_differences_by_stock, \
@@ -81,13 +81,13 @@ def show_stocks_followed(request):
         monitored_and_favorite_stocks_symbols.append(stock.symbol)
     prices_for_last_opened_day = get_prices_for_date(dt_from, monitored_and_favorite_stocks_symbols, best_effort=True)
 
-
     differences_by_period = {}
     period_headers = {}
     for period in all_periods:
         dt_to = dt_from - timedelta(days=period)
 
-        prices_for_last_opened_day_of_period = get_prices_for_date(dt_to, monitored_and_favorite_stocks_symbols, best_effort=True)
+        prices_for_last_opened_day_of_period = get_prices_for_date(dt_to, monitored_and_favorite_stocks_symbols,
+                                                                   best_effort=True)
 
         diff_for_this_period = calculate_and_get_diff_for_period(prices_for_last_opened_day,
                                                                  prices_for_last_opened_day_of_period)
@@ -160,11 +160,15 @@ def transaction_create(request):
                 transaction.share = share
                 transaction.save()
             else:
-                total_pmp_price = share.nb * share.pmp_in_foreign_currency
-                new_share_total_price = form.cleaned_data["nb"] * form.cleaned_data["price_in_foreign_currency"]
-                new_nb_total_share = share.nb + form.cleaned_data["nb"]
-                share.pmp_in_foreign_currency = (total_pmp_price + new_share_total_price) / new_nb_total_share
-                share.nb = new_nb_total_share
+                if form.cleaned_data["type"] == ACHAT:
+                    total_pmp_price = share.nb * share.pmp_in_foreign_currency
+                    new_share_total_price = form.cleaned_data["nb"] * form.cleaned_data["price_in_foreign_currency"]
+                    new_nb_total_share = share.nb + form.cleaned_data["nb"]
+                    share.pmp_in_foreign_currency = (total_pmp_price + new_share_total_price) / new_nb_total_share
+                    share.nb = new_nb_total_share
+                else:
+                    share.nb = share.nb - form.cleaned_data["nb"]
+
                 share.save()
 
                 transaction = form.save()
@@ -191,8 +195,11 @@ def stock_create(request):
         form = StockNewForm(request.POST)
         if form.is_valid():
             id = form.save()
-            return HttpResponse(
-                f'<script type="text/javascript">window.close(); window.opener.setDataStock("{id.pk}");</script>')
+            if "popup" in request.GET:
+                return HttpResponse(
+                    f'<script type="text/javascript">window.close(); window.opener.setDataStock("{id.pk}");</script>')
+            else:
+                return redirect("index")
         else:
             return render(request, 'stock_form.html', {"form": form})
 
@@ -283,7 +290,11 @@ def unset_favorite(request):
 
 
 def show_wallet_detail(request):
-    wallet = Wallet.objects.get(pk=1)
+    try:
+        wallet = Wallet.objects.get(pk=1)
+    except Wallet.DoesNotExist:
+        wallet = Wallet.objects.create(name="Mon portefeuille")
+        wallet.save()
 
     shares = Share.objects.filter(wallet=wallet)
     transactions = Transaction.objects.all().order_by("-date")

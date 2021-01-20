@@ -9,3 +9,4 @@ bourse/__pycache__/
 bourse/templatetags/__pycache__/
 djbourse/__pycache__/
 utils/__pycache__/
+djbourse/settings_posgres_laptop.py
