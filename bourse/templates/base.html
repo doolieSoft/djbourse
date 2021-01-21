@@ -46,17 +46,17 @@
             <li class="{% if request.resolver_match.url_name == 'show-wallet-detail' %}active{% endif %}">
                 <a class="nav-link" href="{% url 'show-wallet-detail' %}">Portefeuille</a>
             </li>
-            <li class="{% if request.resolver_match.url_name == 'get-diff-for-all-periods-and-all-stocks' %}active{% endif %}">
+            <li class="{% if request.resolver_match.url_name == 'show-stocks-followed' %}active{% endif %}">
                 <a class="nav-link" href="{% url 'show-stocks-followed' %}">Actions Suivies</a>
             </li>
             <li class="nav-item dropdown">
-                <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownTransaction" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Transaction</a>
+                <a class="nav-link dropdown-toggle {% if request.resolver_match.url_name == 'transaction-create' %}active{% endif %}" href="#" id="navbarDropdownTransaction" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Transaction</a>
                 <div class="dropdown-menu" aria-labelledby="navbarDropdown">
                   <a class="dropdown-item" href="{% url 'transaction-create' %}">Ajouter</a>
                 </div>
             </li>
             <li class="nav-item dropdown">
-                <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownAction" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Action</a>
+                <a class="nav-link dropdown-toggle {% if request.resolver_match.url_name == 'stock-create' %}active{% endif %}" href="#" id="navbarDropdownAction" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Action</a>
                 <div class="dropdown-menu" aria-labelledby="navbarDropdown">
                   <a class="dropdown-item" href="{% url 'stock-create' %}">Ajouter</a>
                 </div>
