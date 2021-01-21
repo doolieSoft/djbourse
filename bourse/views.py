@@ -297,7 +297,6 @@ def show_wallet_detail(request):
         wallet = Wallet.objects.create(name="Mon portefeuille")
         wallet.save()
 
-    shares = Share.objects.filter(wallet=wallet)
     transactions = Transaction.objects.all().order_by("-date")
     wallet_transactions = []
     total_buy = 0
@@ -314,7 +313,7 @@ def show_wallet_detail(request):
             elif transaction.type == "Achat":
                 total_buy += transaction.nb * transaction.price_in_foreign_currency * transaction.currency_current_value.ratio_foreign_to_home_currency
 
-    shares_in_wallet_and_not_archived = shares.filter(wallet=wallet, archive=False).order_by('stock')
+    shares_in_wallet_and_not_archived = Share.objects.filter(wallet=wallet, archive=False).order_by('stock__symbol')
 
     current_shares_prices_by_stocks = {}
     current_total_prices_in_home_currency = {}
@@ -341,7 +340,7 @@ def show_wallet_detail(request):
                       2)
         shares_benef_by_stock[share.stock.symbol] = benef
 
-    shares_in_wallet_and_archived = Share.objects.filter(wallet=wallet, archive=True).order_by('stock')
+    shares_in_wallet_and_archived = Share.objects.filter(wallet=wallet, archive=True).order_by('stock__symbol')
 
     total_return = round(total_sell - total_buy + total_investment_in_stock - total_transaction_fees, 2)
     context = {
