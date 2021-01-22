@@ -19,7 +19,7 @@ class TransactionNewForm(forms.ModelForm):
     stock = forms.ModelChoiceField(
         label="Action",
         required=True,
-        queryset=Stock.objects.all().order_by("name"),
+        queryset=Stock.objects.all().order_by("symbol"),
         widget=RelatedFieldWidgetCanAdd(Stock, related_url="stock-create")
     )
     currency_current_value = forms.ModelChoiceField(
