@@ -154,7 +154,12 @@ def transaction_create(request):
     elif request.method == "POST":
         form = TransactionNewForm(request.POST, wallet=wallet)
         if form.is_valid():
-            share = Share.objects.filter(stock=form.cleaned_data["stock"]).first()
+            share = None
+            try:
+                share = Share.objects.get(stock=form.cleaned_data["stock"], wallet=wallet)
+            except:
+                pass
+
             if share is None:
                 if form.cleaned_data["type"] == VENTE:
                     return render(request, "add_transaction.html",
