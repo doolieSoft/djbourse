@@ -13,7 +13,7 @@ import os
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
-BASE_DIR = Path(__file__).resolve().parent.parent
+BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/3.1/howto/deployment/checklist/
@@ -23,6 +23,7 @@ SECRET_KEY = 'nbvi$270j^y@!=rf$4pid$w*)__x(@w9%s@tej#+z+%6p_@9m3'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
+
 
 ALLOWED_HOSTS = ["127.0.0.1", "192.168.0.3", "localhost"]
 
@@ -47,6 +48,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'django_cprofile_middleware.middleware.ProfilerMiddleware',
 ]
 
 ROOT_URLCONF = 'djbourse.urls'
@@ -135,5 +137,7 @@ LOGGING = {
         },
     },
 }
+
+DJANGO_CPROFILE_MIDDLEWARE_REQUIRE_STAFF = False
 
 LOGIN_REDIRECT_URL = '/'

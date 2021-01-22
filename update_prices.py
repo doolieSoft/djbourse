@@ -6,6 +6,7 @@ import time
 from datetime import datetime
 
 import requests as r
+from django.conf import settings
 from django.db.models import Q
 from django.utils import timezone
 
@@ -15,7 +16,7 @@ TIME_SERIES_DAILY = "Time Series (Daily)"
 OPEN = "1. open"
 CLOSE = "4. close"
 
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "djbourse.settings")
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "djbourse.settings.prod")
 import django
 
 django.setup()
@@ -80,7 +81,7 @@ if __name__ == "__main__":
 
     update_exchange_rate_usd_to_eur()
 
-    stocks_symbols = Stock.objects.filter(Q(monitored=True) | Q(is_favorite=True)).order_by("symbol")
+    stocks_symbols = Stock.objects.all().order_by("symbol")
 
     for stock_symbol in stocks_symbols:
         print(stock_symbol.name)
@@ -98,17 +99,18 @@ if __name__ == "__main__":
 
         print(file)
         if StockPrice.objects.filter(stock=stock_symbol).count() == 0:
-            for date, prices in json_data[TIME_SERIES_DAILY].items():
-                price_date = f"{date}"
-                price_open = f"{float(prices[OPEN]):.2f}"
-                price_close = f"{float(prices[CLOSE]):.2f}"
+            if TIME_SERIES_DAILY in json_data:
+                for date, prices in json_data[TIME_SERIES_DAILY].items():
+                    price_date = f"{date}"
+                    price_open = f"{float(prices[OPEN]):.2f}"
+                    price_close = f"{float(prices[CLOSE]):.2f}"
 
-                price = StockPrice()
-                price.open = price_open
-                price.close = price_close
-                price.date = price_date
-                price.stock = stock_symbol
-                price.save()
+                    price = StockPrice()
+                    price.open = price_open
+                    price.close = price_close
+                    price.date = price_date
+                    price.stock = stock_symbol
+                    price.save()
         else:
             for date, prices in json_data[TIME_SERIES_DAILY].items():
                 if date > first_day_of_this_year:
