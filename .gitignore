@@ -2,7 +2,8 @@
 /db.sqlite3
 /venv/
 /.idea/
-/update_prices.bat
+/update_prices_dev.bat
+/update_prices_prod.bat
 /bourse/migrations/
 /db.sqlite3
 bourse/__pycache__/
@@ -10,3 +11,4 @@ bourse/templatetags/__pycache__/
 djbourse/__pycache__/
 utils/__pycache__/
 djbourse/settings/prod.py
+/export_backup
