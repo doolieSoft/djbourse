@@ -27,4 +27,3 @@ call djbourse\venv\Scripts\deactivate.bat
 * showing a flag in cell for stocks that have been splitted (AAPL in picture above)
 * Manage transactions
 * Make it multilingual
-* Add user authetication
