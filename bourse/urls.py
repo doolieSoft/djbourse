@@ -24,7 +24,7 @@ urlpatterns = [
     path('set_monitored', set_monitored, name='set-monitored'),
     path('set_favorite', set_favorite, name='set-favorite'),
     path('unset_favorite', unset_favorite, name='unset-favorite'),
-    path('wallet/detail', show_wallet_detail, name='show-wallet-detail'),
+    path('wallet/detail/', show_wallet_detail, name='show-wallet-detail'),
     path('ajax/get_stock_id/', get_stock_id, name='get-stock-id'),
     path('ajax/get_currency_current_value_id/', get_currency_current_value_id, name='get-currency-current-value-id'),
 ]

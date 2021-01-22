@@ -1,3 +1,4 @@
+from django.contrib.auth.models import User
 from django.db import models
 
 
@@ -43,6 +44,7 @@ class CurrencyCurrentValue(models.Model):
 
 class Wallet(models.Model):
     name = models.CharField(max_length=40)
+    user = models.ForeignKey(to=User, on_delete=models.CASCADE)
 
     def __str__(self):
         return str(self.name)
@@ -76,7 +78,7 @@ CHOICES_TYPE_TRANSACTION = ((ACHAT, "ACHAT"), (VENTE, "VENTE"),)
 class Transaction(models.Model):
     date = models.DateField()
     nb = models.IntegerField(default=0)
-    transacrion_fees = models.FloatField(default=0)
+    transaction_fees = models.FloatField(default=0)
     stock = models.ForeignKey(Stock, on_delete=models.DO_NOTHING, null=True)
     price_in_foreign_currency = models.FloatField(default=0)
     type = models.CharField(max_length=10, choices=CHOICES_TYPE_TRANSACTION, default=ACHAT)

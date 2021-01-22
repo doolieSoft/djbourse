@@ -35,6 +35,7 @@ all_periods = [DUREE_2_JOUR,
                DUREE_ANNEE,
                DUREE_2_ANNEE]
 
+
 @login_required
 def index(request):
     return render(request, 'index.html')
@@ -140,15 +141,18 @@ class TransactionCreate(CreateView):
     template_name = 'add_transaction.html'
     success_url = "/"
 
+
 @login_required
 def transaction_create(request):
+    wallet = Wallet.objects.get(user=request.user)
+
     if request.method == "GET":
-        form = TransactionNewForm()
+        form = TransactionNewForm(wallet=wallet)
         context = {"form": form}
         return render(request, 'add_transaction.html', context=context)
 
     elif request.method == "POST":
-        form = TransactionNewForm(request.POST)
+        form = TransactionNewForm(request.POST, wallet=wallet)
         if form.is_valid():
             share = Share.objects.filter(stock=form.cleaned_data["stock"]).first()
             if share is None:
@@ -181,6 +185,7 @@ def transaction_create(request):
             return redirect("show-wallet-detail")
         else:
             return render(request, 'add_transaction.html', {"form": form})
+
 
 @login_required
 def stock_create(request):
@@ -291,15 +296,18 @@ def unset_favorite(request):
         stock.save()
     return redirect("show-stocks-followed")
 
+
 @login_required
 def show_wallet_detail(request):
+    current_user = request.user
+    print(current_user)
     try:
-        wallet = Wallet.objects.get(pk=1)
+        wallet = Wallet.objects.get(user=current_user.id)
     except Wallet.DoesNotExist:
-        wallet = Wallet.objects.create(name="Mon portefeuille")
+        wallet = Wallet.objects.create(name="Mon portefeuille", user=current_user)
         wallet.save()
 
-    transactions = Transaction.objects.all().order_by("-date")
+    transactions = Transaction.objects.filter(share__wallet__user=current_user).order_by("-date")
     wallet_transactions = []
     total_buy = 0
     total_sell = 0
@@ -308,7 +316,7 @@ def show_wallet_detail(request):
     for transaction in transactions:
         if transaction.share.wallet == wallet:
             wallet_transactions.append(transaction)
-            total_transaction_fees += round(transaction.transacrion_fees, 2)
+            total_transaction_fees += round(transaction.transaction_fees, 2)
 
             if transaction.type == "Vente":
                 total_sell += transaction.nb * transaction.price_in_foreign_currency * transaction.currency_current_value.ratio_foreign_to_home_currency

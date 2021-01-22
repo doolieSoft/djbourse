@@ -16,6 +16,12 @@ class StockNewForm(forms.ModelForm):
 
 
 class TransactionNewForm(forms.ModelForm):
+    def __init__(self,*args,**kwargs):
+        self.wallet = kwargs.pop('wallet')
+        super(TransactionNewForm, self).__init__(*args, **kwargs)
+        self.fields['wallet'].queryset = Wallet.objects.filter(id=self.wallet.id).order_by("name")
+
+
     stock = forms.ModelChoiceField(
         label="Action",
         required=True,
@@ -30,16 +36,16 @@ class TransactionNewForm(forms.ModelForm):
     )
     wallet = forms.ModelChoiceField(
         label="Portefeuille",
-        queryset=Wallet.objects.all().order_by("name"),
+        queryset=Wallet.objects.all(),
         required=True
     )
 
     class Meta:
         model = Transaction
         fields = (
-        'date', 'nb', 'price_in_foreign_currency', 'transacrion_fees', 'stock', 'type', 'currency_current_value')
+        'date', 'nb', 'price_in_foreign_currency', 'transaction_fees', 'stock', 'type', 'currency_current_value')
         labels = {'date': "Date", 'nb': "Nombre", 'price_in_foreign_currency': "Prix",
-                  'transacrion_fees': "Frais d'opération", 'type': "Type"}
+                  'transaction_fees': "Frais d'opération", 'type': "Type"}
 
 
 class CurrencyCurrentValueNewForm(forms.ModelForm):
