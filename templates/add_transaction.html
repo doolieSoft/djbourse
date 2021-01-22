@@ -7,6 +7,7 @@ DJBourse - Ajouter une transaction
 {% block content %}
 <div class="container-fluid m-1">
     <div class="col-12">
+        <div class="row">{{error}}</div>
         <form method="post" action="{% url 'transaction-create' %}" class="form-horizontal">
             {% csrf_token %}
             {{form.as_p}}

@@ -10,7 +10,7 @@ from django.views.generic import CreateView
 
 from .forms import StockListForm, StockNewForm, TransactionNewForm, CurrencyCurrentValueNewForm
 from .models import Stock, AlphaVantageApiKey, Wallet, Share, StockPrice, \
-    CurrencyCurrentValue, Transaction, Currency, ACHAT
+    CurrencyCurrentValue, Transaction, Currency, VENTE
 from .utils import insert_new_stock_in_model, \
     calculate_and_get_diff_for_period, \
     get_differences_by_stock, \
@@ -156,6 +156,11 @@ def transaction_create(request):
         if form.is_valid():
             share = Share.objects.filter(stock=form.cleaned_data["stock"]).first()
             if share is None:
+                if form.cleaned_data["type"] == VENTE:
+                    return render(request, "add_transaction.html",
+                                  {"form": form, "error": "Vous n'avez aucune action à vendre."})
+
+                # si achat et qu'il n'y a pas encore de share en db on la crée
                 share = Share.objects.create(stock=form.cleaned_data["stock"],
                                              nb=form.cleaned_data["nb"],
                                              wallet=form.cleaned_data["wallet"],
@@ -165,19 +170,24 @@ def transaction_create(request):
                 transaction = form.save()
                 transaction.share = share
                 transaction.save()
+
             else:
-                if form.cleaned_data["type"] == ACHAT:
+                if form.cleaned_data["type"] == VENTE:
+                    share.nb = share.nb - form.cleaned_data["nb"]
+                    if share.nb == 0:
+                        share.archive = True
+                    elif share.nb < 0:
+                        return render(request, "add_transaction.html",
+                                      {"form": form, "error": "Vous n'avez pas assez d'action à vendre."})
+
+                else:
                     total_pmp_price = share.nb * share.pmp_in_foreign_currency
                     new_share_total_price = form.cleaned_data["nb"] * form.cleaned_data["price_in_foreign_currency"]
                     new_nb_total_share = share.nb + form.cleaned_data["nb"]
                     share.pmp_in_foreign_currency = (total_pmp_price + new_share_total_price) / new_nb_total_share
                     share.nb = new_nb_total_share
-                else:
-                    share.nb = share.nb - form.cleaned_data["nb"]
-                    share.archive = True
 
                 share.save()
-
                 transaction = form.save()
                 transaction.share = share
                 transaction.save()
@@ -300,7 +310,6 @@ def unset_favorite(request):
 @login_required
 def show_wallet_detail(request):
     current_user = request.user
-    print(current_user)
     try:
         wallet = Wallet.objects.get(user=current_user.id)
     except Wallet.DoesNotExist:
