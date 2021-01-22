@@ -3,14 +3,13 @@ from datetime import datetime, timedelta
 
 from django.contrib.auth.decorators import login_required
 from django.core.serializers import serialize
-from django.db.models import Q
 from django.http import HttpResponse
 from django.shortcuts import redirect, render
 from django.views.generic import CreateView
 
 from .forms import StockListForm, StockNewForm, TransactionNewForm, CurrencyCurrentValueNewForm
 from .models import Stock, AlphaVantageApiKey, Wallet, Share, StockPrice, \
-    CurrencyCurrentValue, Transaction, Currency, VENTE
+    CurrencyCurrentValue, Transaction, Currency, VENTE, StockFollowed
 from .utils import insert_new_stock_in_model, \
     calculate_and_get_diff_for_period, \
     get_differences_by_stock, \
@@ -73,52 +72,61 @@ def upload_stocks_symbol(request):
 # Cette méthode va calculer la différence en pourcentage par période
 @login_required
 def show_stocks_followed(request):
-    dt_from = datetime.now()
-    dt_from = dt_from - timedelta(days=1)
+    if request.method == "GET":
+        dt_from = datetime.now()
+        dt_from = dt_from - timedelta(days=1)
 
-    monitored_stocks = Stock.objects.filter(monitored=True)
-    monitored_and_favorite_stocks = Stock.objects.filter(Q(is_favorite=True) | Q(monitored=True))
+        followed_stocks = StockFollowed.objects.filter(user=request.user).order_by("stock__symbol")
+        followed_and_favorite_stocks = StockFollowed.objects.filter(user=request.user)
 
-    monitored_and_favorite_stocks_symbols = []
-    for stock in monitored_and_favorite_stocks:
-        monitored_and_favorite_stocks_symbols.append(stock.symbol)
-    prices_for_last_opened_day = get_prices_for_date(dt_from, monitored_and_favorite_stocks_symbols, best_effort=True)
+        followed_and_favorite_stocks_symbols = []
+        for followed_stock in followed_and_favorite_stocks:
+            followed_and_favorite_stocks_symbols.append(followed_stock.stock.symbol)
+        prices_for_last_opened_day = get_prices_for_date(dt_from, followed_and_favorite_stocks_symbols,
+                                                         best_effort=True)
 
-    differences_by_period = {}
-    period_headers = {}
-    for period in all_periods:
-        dt_to = dt_from - timedelta(days=period)
+        differences_by_period = {}
+        period_headers = {}
+        for period in all_periods:
+            dt_to = dt_from - timedelta(days=period)
 
-        prices_for_last_opened_day_of_period = get_prices_for_date(dt_to, monitored_and_favorite_stocks_symbols,
-                                                                   best_effort=True)
+            prices_for_last_opened_day_of_period = get_prices_for_date(dt_to, followed_and_favorite_stocks_symbols,
+                                                                       best_effort=True)
 
-        diff_for_this_period = calculate_and_get_diff_for_period(prices_for_last_opened_day,
-                                                                 prices_for_last_opened_day_of_period)
+            diff_for_this_period = calculate_and_get_diff_for_period(prices_for_last_opened_day,
+                                                                     prices_for_last_opened_day_of_period)
 
-        differences_by_period[period] = diff_for_this_period
-        period_headers[period] = period
+            differences_by_period[period] = diff_for_this_period
+            period_headers[period] = period
 
-    differences_by_monitored_stocks = []
-    ordered_monitored_stocks = monitored_stocks.order_by('symbol')
-    for stock in ordered_monitored_stocks:
-        differences_by_monitored_stocks.append(get_differences_by_stock(differences_by_period, stock))
+        differences_by_monitored_stocks = []
 
-    stocks_not_monitored = []
-    for stock in Stock.objects.filter(monitored=False, is_favorite=False).order_by('symbol'):
-        stocks_not_monitored.append(f"{stock.symbol} ({stock.name})")
+        for followed_stock in followed_stocks:
+            differences_by_monitored_stocks.append(
+                get_differences_by_stock(differences_by_period, followed_stock.stock))
 
-    differences_by_favorites_stocks = []
-    favorites_stocks = Stock.objects.filter(is_favorite=True).order_by('symbol')
-    for stock in favorites_stocks:
-        differences_by_favorites_stocks.append(get_differences_by_stock(differences_by_period, stock))
+        differences_by_favorites_stocks = []
+        followed_favorites_stocks = StockFollowed.objects.filter(is_favorite=True).order_by('stock__symbol')
+        for followed_stock in followed_favorites_stocks:
+            differences_by_favorites_stocks.append(get_differences_by_stock(differences_by_period, followed_stock))
 
-    context = {
-        "period_headers": period_headers,
-        "differences_by_favorites_stocks": differences_by_favorites_stocks,
-        "differences_by_monitored_stocks": differences_by_monitored_stocks,
-        "stocks_not_monitored": stocks_not_monitored
-    }
-    return render(request, "show_stock_followed.html", context)
+        stocks_already_followed = StockFollowed.objects.filter(user=request.user)
+        stocks_already_followed_symbol = {stock_already_followed.stock.symbol for stock_already_followed in stocks_already_followed}
+
+        stocks_that_can_be_followed = Stock.objects.exclude(symbol__in=stocks_already_followed_symbol).order_by(
+            "symbol")
+        context = {
+            "period_headers": period_headers,
+            "differences_by_favorites_stocks": differences_by_favorites_stocks,
+            "differences_by_monitored_stocks": differences_by_monitored_stocks,
+            "stocks_that_can_be_followed": stocks_that_can_be_followed,
+        }
+        return render(request, "show_stock_followed.html", context)
+    elif request.method == "POST":
+        if StockFollowed.objects.filter(user=request.user, stock__id=request.POST["stock_id"]).count() == 0:
+            stock = Stock.objects.get(id=request.POST["stock_id"])
+            StockFollowed.objects.create(user=request.user, stock=stock)
+        return redirect("show-stocks-followed")
 
 
 def add_stock_symbol(request):
@@ -144,7 +152,13 @@ class TransactionCreate(CreateView):
 
 @login_required
 def transaction_create(request):
-    wallet = Wallet.objects.get(user=request.user)
+    current_user = request.user
+    wallet = None
+    try:
+        wallet = Wallet.objects.get(user=request.user)
+    except Wallet.DoesNotExist:
+        wallet = Wallet.objects.create(name="Mon portefeuille", user=current_user)
+        wallet.save()
 
     if request.method == "GET":
         form = TransactionNewForm(wallet=wallet)
@@ -276,9 +290,7 @@ def get_currency_current_value_id(request):
 def unset_monitored(request):
     if request.method == "POST":
         symbol, name, *rest = request.POST['symbol'].split(" ")
-        stock = Stock.objects.get(symbol=symbol)
-        stock.monitored = False
-        stock.save()
+        StockFollowed.objects.filter(user=request.user, stock__symbol=symbol).delete()
 
     return redirect("show-stocks-followed")
 
@@ -286,9 +298,10 @@ def unset_monitored(request):
 def set_monitored(request):
     if request.method == "POST":
         symbol, name, *rest = request.POST['symbol'].split(" ")
-        stock = Stock.objects.get(symbol=symbol.strip())
-        stock.monitored = True
-        stock.save()
+
+        if StockFollowed.objects.filter(user=request.user, stock__symbol=symbol).count() == 0:
+            print("on crée un stock followed")
+            StockFollowed.objects.create(user=request.user, stock__symbol=symbol)
     return redirect("show-stocks-followed")
 
 
@@ -315,6 +328,7 @@ def unset_favorite(request):
 @login_required
 def show_wallet_detail(request):
     current_user = request.user
+    wallet = None
     try:
         wallet = Wallet.objects.get(user=current_user.id)
     except Wallet.DoesNotExist:

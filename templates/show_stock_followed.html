@@ -4,150 +4,123 @@
 DJBourse - Actions suivies
 {% endblock title %}
 {% block content %}
-    <div class="row">
-        <table class="table table-sm table-bordered table-hover">
-            <caption>Actions favorites</caption>
-            <thead class="thead-light">
-            <th>Symbole</th>
-            {% for period in period_headers.keys %}
-            <th><span style="font-size: 10px;"><i class="fa fa-percent" aria-hidden="true"></i></span> gain {{period}} j</th>
+<div class="row">
+    <form method="post">
+        {%csrf_token%}
+        <select name="stock_id">
+            {% for stock_that_can_be_followed in stocks_that_can_be_followed %}
+            <option value="{{stock_that_can_be_followed.id}}">{{stock_that_can_be_followed.symbol}} - {{stock_that_can_be_followed.name}}</option>
             {% endfor %}
-            </thead>
-            <tbody>
-            <tbody>
-            {% for dict in differences_by_favorites_stocks %}
-            <tr>
-                {% for symbol, values in dict.items %}
-                <td style="width: 20%">
-                    <div class="d-flex justify-content-between">
-                        <div>
-                                <b><a href="https://www.google.com/search?safe=off&sa=X&tbm=fin&q={{symbol}}">{{ symbol }}</a></b>
-                        </div>
-                        <div class="btn-group">
-                            <form method="post" action="unset_favorite">
-                                {% csrf_token %}
-                                <input type="hidden" name="symbol" value="{{symbol}}">
-                                <button type="submit" class="btn btn-default btn-sm">
-                                    <i class="fas fa-star"></i>
-                                </button>
-                            </form>
-                        </div>
+        </select>
+        <button type="submit">Ajouter</button>
+    </form>
+    <table class="table table-sm table-bordered table-hover">
+        <caption>Actions favorites</caption>
+        <thead class="thead-light">
+        <th>Symbole</th>
+        {% for period in period_headers.keys %}
+        <th><span style="font-size: 10px;"><i class="fa fa-percent" aria-hidden="true"></i></span> gain {{period}} j
+        </th>
+        {% endfor %}
+        </thead>
+        <tbody>
+        <tbody>
+        {% for dict in differences_by_favorites_stocks %}
+        <tr>
+            {% for symbol, values in dict.items %}
+            <td style="width: 20%">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <b><a href="https://www.google.com/search?safe=off&sa=X&tbm=fin&q={{symbol}}">{{symbol}}</a></b>
                     </div>
-                </td>
-                {% for value in values %}
-                {% if value < -10 %}
-                <td class="table-danger">{{ value }}</td>
-                {% elif value < 0 %}
-                <td class="table-warning">{{ value }}</td>
-                {% elif value > 20 %}
-                <td class="table-primary">{{ value }}</td>
-                {% elif value > 10 %}
-                <td class="table-success">{{ value }}</td>
-                {% elif value > 0 %}
-                <td class="table-info">{{ value }}</td>
-                {% else %}
-                <td class="table-secondary">{{ value }}</td>
-                {% endif %}
-                {% endfor %}
-                {% endfor %}
-            </tr>
-            {% endfor %}
-            </tbody>
-        </table>
-        <table id="table_actions_suivies" class="table table-sm table-bordered table-hover">
-            <caption>Actions suivies</caption>
-            <thead class="thead-light">
-            <th>Symbole</th>
-            {% for period in period_headers.keys %}
-            <th><span style="font-size: 10px;"><i class="fa fa-percent" aria-hidden="true"></i></span> gain {{period}} j</th>
-            {% endfor %}
-            </thead>
-            <tbody>
-            {% for dict in differences_by_monitored_stocks %}
-            <tr>
-                {% for symbol, values in dict.items %}
-                <td style="width: 20%">
-                    <div class="d-flex justify-content-between">
-                        <div>
-                                <b><a href="https://www.google.com/search?safe=off&sa=X&tbm=fin&q={{symbol}}">{{ symbol }}</a></b>
-                        </div>
-                        <div class="btn-group">
-                            <form method="post" action="set_favorite">
-                                {% csrf_token %}
-                                <input type="hidden" name="symbol" value="{{symbol}}">
-                                <button type="submit" class="btn btn-default btn-sm">
-                                    <i class="far fa-star"></i>
-                                </button>
-                            </form>
-                            <form method="post" action="unset_monitored">
-                                {% csrf_token %}
-                                <input type="hidden" name="symbol" value="{{symbol}}">
-                                <button type="submit" class="btn btn-default btn-sm">
-                                    <i class="far fa-minus-square"></i>
-                                </button>
-                            </form>
-                        </div>
+                    <div class="btn-group">
+                        <form method="post" action="unset_favorite">
+                            {% csrf_token %}
+                            <input type="hidden" name="symbol" value="{{symbol}}">
+                            <button type="submit" class="btn btn-default btn-sm">
+                                <i class="fas fa-star"></i>
+                            </button>
+                        </form>
                     </div>
-                </td>
-                    {% for value in values %}
-                        {% if value < -10 %}
-                        <td class="table-danger">{{ value }}</td>
-                        {% elif value < 0 %}
-                        <td class="table-warning">{{ value }}</td>
-                        {% elif value > 20 %}
-                        <td class="table-primary">{{ value }}</td>
-                        {% elif value > 10 %}
-                        <td class="table-success">{{ value }}</td>
-                        {% elif value > 0 %}
-                        <td class="table-info">{{ value }}</td>
-                        {% else %}
-                        <td class="table-secondary">{{ value }}</td>
-                        {% endif %}
-                    {% endfor %}
-                {% endfor %}
-            </tr>
+                </div>
+            </td>
+            {% for value in values %}
+            {% if value < -10 %}
+            <td class="table-danger">{{ value }}</td>
+            {% elif value < 0 %}
+            <td class="table-warning">{{ value }}</td>
+            {% elif value > 20 %}
+            <td class="table-primary">{{ value }}</td>
+            {% elif value > 10 %}
+            <td class="table-success">{{ value }}</td>
+            {% elif value > 0 %}
+            <td class="table-info">{{ value }}</td>
+            {% else %}
+            <td class="table-secondary">{{ value }}</td>
+            {% endif %}
             {% endfor %}
-            </tbody>
-        </table>
-        <table class="table table-sm table-bordered table-hover">
-            <caption>Actions non suivies</caption>
-            <thead class="thead-light">
-            <th>Symbole</th>
-            <th></th>
-            </thead>
-            <tbody>
-            {% for stock in stocks_not_monitored %}
-            <tr>
-                <td style="width: 20%">
-                    <div class="d-flex justify-content-between">
-                    {{stock}}
-                        <div>
-                                <b><a href="https://www.google.com/search?safe=off&sa=X&tbm=fin&q={{symbol}}">{{ symbol }}</a></b>
-                        </div>
-                        <div class="btn-group">
-                            <form method="post" action="{% url 'set-favorite' %}">
-                                {% csrf_token %}
-                                <input type="hidden" name="symbol" value="{{stock}}">
-                                <button type="submit" class="btn btn-default btn-sm">
-                                    <i class="far fa-star"></i>
-                                </button>
-                            </form>
-                            <form method="post" action="set_monitored">
-                                {% csrf_token %}
-                                <input type="hidden" name="symbol" value="{{stock}}">
-                                <button type="submit" class="btn btn-default btn-sm">
-                                    <i class="far fa-plus-square"></i>
-                                </button>
-                            </form>
-                        </div>
+            {% endfor %}
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    <table id="table_actions_suivies" class="table table-sm table-bordered table-hover">
+        <caption>Actions suivies</caption>
+        <thead class="thead-light">
+        <th>Symbole</th>
+        {% for period in period_headers.keys %}
+        <th><span style="font-size: 10px;"><i class="fa fa-percent" aria-hidden="true"></i></span> gain {{period}} j
+        </th>
+        {% endfor %}
+        </thead>
+        <tbody>
+        {% for dict in differences_by_monitored_stocks %}
+        <tr>
+            {% for symbol, values in dict.items %}
+            <td style="width: 20%">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <b><a href="https://www.google.com/search?safe=off&sa=X&tbm=fin&q={{symbol}}">{{symbol}}</a></b>
                     </div>
-                </td>
-                <td></td>
-            </tr>
+                    <div class="btn-group">
+                        <form method="post" action="set_favorite">
+                            {% csrf_token %}
+                            <input type="hidden" name="symbol" value="{{symbol}}">
+                            <button type="submit" class="btn btn-default btn-sm">
+                                <i class="far fa-star"></i>
+                            </button>
+                        </form>
+                        <form method="post" action="unset_monitored">
+                            {% csrf_token %}
+                            <input type="hidden" name="symbol" value="{{symbol}}">
+                            <button type="submit" class="btn btn-default btn-sm">
+                                <i class="far fa-minus-square"></i>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </td>
+            {% for value in values %}
+            {% if value < -10 %}
+            <td class="table-danger">{{ value }}</td>
+            {% elif value < 0 %}
+            <td class="table-warning">{{ value }}</td>
+            {% elif value > 20 %}
+            <td class="table-primary">{{ value }}</td>
+            {% elif value > 10 %}
+            <td class="table-success">{{ value }}</td>
+            {% elif value > 0 %}
+            <td class="table-info">{{ value }}</td>
+            {% else %}
+            <td class="table-secondary">{{ value }}</td>
+            {% endif %}
             {% endfor %}
-            </tbody>
-        </table>
-        </div>
+            {% endfor %}
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
 {% endblock content %}
 
 {% block script %}
@@ -189,5 +162,6 @@ DJBourse - Actions suivies
 
         });
     } );
+
 </script>
 {% endblock script %}

@@ -1,6 +1,7 @@
 from django.contrib import admin
 
-from .models import StockPrice, Stock, Wallet, Transaction, AlphaVantageApiKey, Share, CurrencyCurrentValue, Currency
+from .models import StockPrice, Stock, Wallet, Transaction, AlphaVantageApiKey, Share, CurrencyCurrentValue, Currency, \
+    StockFollowed
 
 
 # Register your models here.
@@ -30,3 +31,4 @@ admin.site.register(AlphaVantageApiKey)
 admin.site.register(Share, ShareAdmin)
 admin.site.register(CurrencyCurrentValue)
 admin.site.register(Currency)
+admin.site.register(StockFollowed)

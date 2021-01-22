@@ -16,6 +16,8 @@ def insert_new_stock_in_model(stock_file):
 
 def get_prices_for_date(dt_from, stocks_symbols, best_effort=False):
     price_by_symbol = {}
+    print(dt_from)
+    print(stocks_symbols)
     for stock_symbol in stocks_symbols:
         nb_price_for_stock = StockPrice.objects.filter(date=dt_from, stock__symbol=stock_symbol).count()
 
@@ -69,11 +71,14 @@ def calculate_and_get_diff_for_period(prices_for_last_opened_day, prices_for_las
 
 def get_differences_by_stock(differences_by_period, stock):
     line_by_stock = []
-
+    print(differences_by_period)
     for period in differences_by_period.keys():
-        if isinstance(differences_by_period[period][stock.symbol], str):
-            line_by_stock.append("")
+        if stock.symbol in differences_by_period[period]:
+            if isinstance(differences_by_period[period][stock.symbol], str):
+                line_by_stock.append("")
+            else:
+                line_by_stock.append(round(differences_by_period[period][stock.symbol], 2))
         else:
-            line_by_stock.append(round(differences_by_period[period][stock.symbol], 2))
+            line_by_stock.append("")
 
     return {f"{stock.symbol} ({stock.name})": line_by_stock}
