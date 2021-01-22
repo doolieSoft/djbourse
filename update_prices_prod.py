@@ -1,13 +1,10 @@
 import argparse
 import json
 import os
-# django project name is adleads, replace adleads with your project name
 import time
 from datetime import datetime
 
 import requests as r
-from django.conf import settings
-from django.db.models import Q
 from django.utils import timezone
 
 SECS_BEFORE_NEXT_API_CALL = 62
