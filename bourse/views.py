@@ -76,7 +76,7 @@ def show_stocks_followed(request):
         dt_from = datetime.now()
         dt_from = dt_from - timedelta(days=1)
 
-        followed_stocks = StockFollowed.objects.filter(user=request.user).order_by("stock__symbol")
+        followed_stocks = StockFollowed.objects.filter(user=request.user, is_favorite=False).order_by("stock__symbol")
         followed_and_favorite_stocks = StockFollowed.objects.filter(user=request.user)
 
         followed_and_favorite_stocks_symbols = []
@@ -108,7 +108,7 @@ def show_stocks_followed(request):
         differences_by_favorites_stocks = []
         followed_favorites_stocks = StockFollowed.objects.filter(is_favorite=True).order_by('stock__symbol')
         for followed_stock in followed_favorites_stocks:
-            differences_by_favorites_stocks.append(get_differences_by_stock(differences_by_period, followed_stock))
+            differences_by_favorites_stocks.append(get_differences_by_stock(differences_by_period, followed_stock.stock))
 
         stocks_already_followed = StockFollowed.objects.filter(user=request.user)
         stocks_already_followed_symbol = {stock_already_followed.stock.symbol for stock_already_followed in stocks_already_followed}
@@ -300,7 +300,6 @@ def set_monitored(request):
         symbol, name, *rest = request.POST['symbol'].split(" ")
 
         if StockFollowed.objects.filter(user=request.user, stock__symbol=symbol).count() == 0:
-            print("on crée un stock followed")
             StockFollowed.objects.create(user=request.user, stock__symbol=symbol)
     return redirect("show-stocks-followed")
 
@@ -308,9 +307,8 @@ def set_monitored(request):
 def set_favorite(request):
     if request.method == "POST":
         symbol, name, *rest = request.POST['symbol'].split(" ")
-        stock = Stock.objects.get(symbol=symbol.strip())
+        stock = StockFollowed.objects.get(user=request.user, stock__symbol=symbol.strip())
         stock.is_favorite = True
-        stock.monitored = False
         stock.save()
     return redirect("show-stocks-followed")
 
@@ -318,9 +316,8 @@ def set_favorite(request):
 def unset_favorite(request):
     if request.method == "POST":
         symbol, name, *rest = request.POST['symbol'].split(" ")
-        stock = Stock.objects.get(symbol=symbol.strip())
+        stock = StockFollowed.objects.get(user=request.user, stock__symbol=symbol.strip())
         stock.is_favorite = False
-        stock.monitored = True
         stock.save()
     return redirect("show-stocks-followed")
 
