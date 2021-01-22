@@ -1,4 +1,4 @@
-from django.urls import path
+from django.urls import path, include
 
 from .views import upload_stocks_symbol, \
     index, \
@@ -27,4 +27,10 @@ urlpatterns = [
     path('wallet/detail', show_wallet_detail, name='show-wallet-detail'),
     path('ajax/get_stock_id/', get_stock_id, name='get-stock-id'),
     path('ajax/get_currency_current_value_id/', get_currency_current_value_id, name='get-currency-current-value-id'),
+]
+
+#Add Django site authentication urls (for login, logout, password management)
+
+urlpatterns += [
+    path('accounts/', include('django.contrib.auth.urls')),
 ]

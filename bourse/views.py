@@ -1,6 +1,7 @@
 import json
 from datetime import datetime, timedelta
 
+from django.contrib.auth.decorators import login_required
 from django.core.serializers import serialize
 from django.db.models import Q
 from django.http import HttpResponse
@@ -34,7 +35,7 @@ all_periods = [DUREE_2_JOUR,
                DUREE_ANNEE,
                DUREE_2_ANNEE]
 
-
+@login_required
 def index(request):
     return render(request, 'index.html')
 
@@ -69,6 +70,7 @@ def upload_stocks_symbol(request):
 
 
 # Cette méthode va calculer la différence en pourcentage par période
+@login_required
 def show_stocks_followed(request):
     dt_from = datetime.now()
     dt_from = dt_from - timedelta(days=1)
@@ -138,7 +140,7 @@ class TransactionCreate(CreateView):
     template_name = 'add_transaction.html'
     success_url = "/"
 
-
+@login_required
 def transaction_create(request):
     if request.method == "GET":
         form = TransactionNewForm()
@@ -180,7 +182,7 @@ def transaction_create(request):
         else:
             return render(request, 'add_transaction.html', {"form": form})
 
-
+@login_required
 def stock_create(request):
     print(request)
     if request.method == "GET":
@@ -289,7 +291,7 @@ def unset_favorite(request):
         stock.save()
     return redirect("show-stocks-followed")
 
-
+@login_required
 def show_wallet_detail(request):
     try:
         wallet = Wallet.objects.get(pk=1)

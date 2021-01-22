@@ -80,7 +80,7 @@ if __name__ == "__main__":
 
     update_exchange_rate_usd_to_eur()
 
-    stocks_symbols = Stock.objects.filter(Q(monitored=True) | Q(is_favorite=True))
+    stocks_symbols = Stock.objects.filter(Q(monitored=True) | Q(is_favorite=True)).order_by("symbol")
 
     for stock_symbol in stocks_symbols:
         print(stock_symbol.name)
