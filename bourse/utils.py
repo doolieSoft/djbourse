@@ -14,36 +14,26 @@ def insert_new_stock_in_model(stock_file):
             s.save()
 
 
-def get_prices_for_date(dt_from, stocks_symbols, best_effort=False):
-    price_by_symbol = {}
-    print(dt_from)
-    print(stocks_symbols)
-    for stock_symbol in stocks_symbols:
+def get_price_for_date(dt_from, stock_symbol, best_effort=False):
+    nb_price_for_stock = StockPrice.objects.filter(date=dt_from, stock__symbol=stock_symbol).count()
+
+    if best_effort == False and nb_price_for_stock == 0:
+        return dt_from, None
+
+    i = 0
+    over = False
+    while nb_price_for_stock == 0:
+        dt_from = dt_from - timedelta(days=1)
         nb_price_for_stock = StockPrice.objects.filter(date=dt_from, stock__symbol=stock_symbol).count()
+        i += 1
+        if i == 5:
+            over= True
+            break
 
-        if best_effort == False:
-            if nb_price_for_stock == 0:
-                price_by_symbol[stock_symbol] = None
-            else:
-                price_by_symbol[stock_symbol] = StockPrice.objects.filter(date=dt_from,
-                                                                          stock__symbol=stock_symbol).first().close
-        else:
-            i = 0
-            over = False
-            while nb_price_for_stock == 0:
-                dt_from = dt_from - timedelta(days=1)
-                nb_price_for_stock = StockPrice.objects.filter(date=dt_from, stock__symbol=stock_symbol).count()
-                i += 1
-                if i == 5:
-                    over= True
-                    break
+    if over == True:
+       return dt_from, None
 
-            if over == True:
-               price_by_symbol[stock_symbol] = None
-            else:
-                price_by_symbol[stock_symbol] = StockPrice.objects.filter(date=dt_from,
-                                                                          stock__symbol=stock_symbol).first().close
-    return price_by_symbol
+    return  dt_from, StockPrice.objects.filter(date=dt_from,stock__symbol=stock_symbol).first().close
 
 
 def calculate_and_get_diff_for_period(prices_for_last_opened_day, prices_for_last_opened_day_of_period):

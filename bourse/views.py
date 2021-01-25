@@ -13,7 +13,7 @@ from .models import Stock, AlphaVantageApiKey, Wallet, Share, StockPrice, \
 from .utils import insert_new_stock_in_model, \
     calculate_and_get_diff_for_period, \
     get_differences_by_stock, \
-    get_prices_for_date
+    get_price_for_date
 
 DUREE_2_JOUR = float(2)
 DUREE_SEMAINE = float(7)
@@ -79,19 +79,21 @@ def show_stocks_followed(request):
         followed_stocks = StockFollowed.objects.filter(user=request.user, is_favorite=False).order_by("stock__symbol")
         followed_and_favorite_stocks = StockFollowed.objects.filter(user=request.user)
 
-        followed_and_favorite_stocks_symbols = []
+        prices_for_last_opened_day = {}
         for followed_stock in followed_and_favorite_stocks:
-            followed_and_favorite_stocks_symbols.append(followed_stock.stock.symbol)
-        prices_for_last_opened_day = get_prices_for_date(dt_from, followed_and_favorite_stocks_symbols,
-                                                         best_effort=True)
+            dt_from, prices_for_last_opened_day[followed_stock.stock.symbol] = get_price_for_date(dt_from,
+                                                                                                  followed_stock.stock.symbol,
+                                                                                                  best_effort=True)
 
         differences_by_period = {}
         period_headers = {}
+        prices_for_last_opened_day_of_period = {}
         for period in all_periods:
             dt_to = dt_from - timedelta(days=period)
-
-            prices_for_last_opened_day_of_period = get_prices_for_date(dt_to, followed_and_favorite_stocks_symbols,
-                                                                       best_effort=True)
+            for followed_stock in followed_and_favorite_stocks:
+                dt_to, prices_for_last_opened_day_of_period[followed_stock.stock.symbol] = get_price_for_date(dt_to,
+                                                                                                              followed_stock.stock.symbol,
+                                                                                                              best_effort=True)
 
             diff_for_this_period = calculate_and_get_diff_for_period(prices_for_last_opened_day,
                                                                      prices_for_last_opened_day_of_period)
@@ -108,10 +110,12 @@ def show_stocks_followed(request):
         differences_by_favorites_stocks = []
         followed_favorites_stocks = StockFollowed.objects.filter(is_favorite=True).order_by('stock__symbol')
         for followed_stock in followed_favorites_stocks:
-            differences_by_favorites_stocks.append(get_differences_by_stock(differences_by_period, followed_stock.stock))
+            differences_by_favorites_stocks.append(
+                get_differences_by_stock(differences_by_period, followed_stock.stock))
 
         stocks_already_followed = StockFollowed.objects.filter(user=request.user)
-        stocks_already_followed_symbol = {stock_already_followed.stock.symbol for stock_already_followed in stocks_already_followed}
+        stocks_already_followed_symbol = {stock_already_followed.stock.symbol for stock_already_followed in
+                                          stocks_already_followed}
 
         stocks_that_can_be_followed = Stock.objects.exclude(symbol__in=stocks_already_followed_symbol).order_by(
             "symbol")
